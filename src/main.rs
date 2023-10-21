@@ -12,6 +12,7 @@ use crate::eval::RandomEvaluationFunction;
 
 fn main() {
     let num_players = 2;
+    let search_depth = 5;
     let human_player = 0;  // human plays as player 0 (A)
     let mut game = ConnectFour::new(6, 7, num_players);
     let eval_function = RandomEvaluationFunction::new(num_players);
@@ -25,7 +26,7 @@ fn main() {
             action = game.get_user_move();
         } else {
             let start_time = Instant::now();
-            let (_, best_move) = minimax_move(&game, &eval_function);
+            let (_, best_move) = minimax_move(&mut game, &eval_function, search_depth);
             let duration = start_time.elapsed();
             println!("AI's move took {:.2?} seconds.", duration);
 

@@ -23,6 +23,10 @@ impl ConnectFour {
     pub fn get_to_move(&self) -> usize {
         self.state.get_to_move()
     }
+
+    pub fn get_num_players(&self) -> usize {
+        self.num_players
+    }
     
     pub fn is_sequence_win(&self, sequence: &[i32], player: usize) -> bool {
         sequence.iter().filter(|&&x| x == player as i32).count() >= 4
@@ -97,6 +101,14 @@ impl Game for ConnectFour {
             score[res as usize] = 1.0;
             score
         }
+    }
+
+    fn get_state(&self) -> &GameState {
+        &self.state
+    }
+
+    fn set_state(&mut self, state: GameState) {
+        self.state = state;
     }
 
     fn get_valid_moves(&self) -> Vec<usize> {

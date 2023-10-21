@@ -32,6 +32,8 @@ impl GameState {
 pub trait Game {
     fn get_score(&self) -> Vec<f64>;
     fn get_game_status(&self) -> i32;
+    fn get_state(&self) -> &GameState;
+    fn set_state(&mut self, state: GameState);
     fn get_valid_moves(&self) -> Vec<usize>;
     fn transition(&mut self, move_col: usize);
     fn is_win(&self, player: usize) -> bool;

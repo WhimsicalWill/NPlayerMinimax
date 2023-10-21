@@ -11,8 +11,8 @@ use crate::opt::minimax_move;
 use crate::eval::RandomEvaluationFunction;
 
 fn main() {
-    let num_players = 2;
-    let search_depth = 5;
+    let num_players = 3;
+    let search_depth = 6;
     let human_player = 0;  // human plays as player 0 (A)
     let mut game = ConnectFour::new(6, 7, num_players);
     let eval_function = RandomEvaluationFunction::new(num_players);

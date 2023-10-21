@@ -10,11 +10,13 @@ use wasm_bindgen::prelude::*;
 // Other imports...
 use crate::pushupfour::PushUpFour;
 use crate::game::{Game, GameState};
-use crate::eval::{EvaluationFunction, RandomEvaluationFunction};
-use wasm_bindgen::JsValue;
+use crate::eval::RandomEvaluationFunction;
+use crate::opt::minimax_move;
+use serde::{Serialize, Deserialize};
 
 // This is a simple struct to represent the game state in JS-compatible format
 #[wasm_bindgen]
+#[derive(Serialize, Deserialize)]
 pub struct JsGameState {
     to_move: usize,
     move_num: usize,
@@ -36,7 +38,7 @@ impl From<&GameState> for JsGameState {
 #[wasm_bindgen]
 pub struct PushUpFourGame {
     game: PushUpFour,
-    eval_function: Box<dyn EvaluationFunction>,
+    eval_function: RandomEvaluationFunction,
     search_depth: usize,
 }
 
@@ -46,7 +48,7 @@ impl PushUpFourGame {
     pub fn new(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize) -> PushUpFourGame {
         PushUpFourGame {
             game: PushUpFour::new(n_rows, n_cols, num_players, n_in_a_row),
-            eval_function: Box::new(RandomEvaluationFunction::new(num_players)),
+            eval_function: RandomEvaluationFunction::new(num_players),
             search_depth: 5,
         }
     }
@@ -60,6 +62,11 @@ impl PushUpFourGame {
         self.game.transition(ai_move);
 
         let js_game_state = JsGameState::from(self.game.get_state());
-        JsValue::from_serde(&js_game_state).unwrap()
+        js_game_state
+    }
+
+    pub fn get_state(&self) -> JsGameState {
+        let js_game_state = JsGameState::from(self.game.get_state());
+        js_game_state
     }
 }

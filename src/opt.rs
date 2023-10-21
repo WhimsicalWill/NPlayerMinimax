@@ -1,10 +1,12 @@
-use crate::connectfour::ConnectFour;
+// use crate::connectfour::ConnectFour;
+use crate::pushupfour::PushUpFour;
 use crate::game::Game;
 use crate::eval::EvaluationFunction;
 
-pub fn minimax_move(game: &mut ConnectFour,
+pub fn minimax_move(game: &mut PushUpFour,
                     eval_func: &dyn EvaluationFunction,
-                    search_depth: usize) -> (i32, usize) {
+                    search_depth: usize
+                    ) -> (i32, usize) {
     let num_players = game.get_num_players();
     let mut alphas = vec![0.0; num_players];
     let (_, best_move) = dfs(game, 0, &mut alphas, eval_func, search_depth);
@@ -13,7 +15,7 @@ pub fn minimax_move(game: &mut ConnectFour,
     (0, best_move)
 }
 
-fn dfs(game: &mut ConnectFour,
+fn dfs(game: &mut PushUpFour,
        d: usize,
        alphas: &mut Vec<f64>,
        eval_func: &dyn EvaluationFunction,

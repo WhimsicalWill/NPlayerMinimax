@@ -1,20 +1,26 @@
 mod game;
 mod tictactoe;
-mod connectfour;
+// mod connectfour;
+mod pushupfour;
 mod eval;
 mod opt;
 
 use std::time::Instant;
-use crate::connectfour::ConnectFour;
+// use crate::connectfour::ConnectFour;
+use crate::pushupfour::PushUpFour;
 use crate::game::Game;
 use crate::opt::minimax_move;
 use crate::eval::RandomEvaluationFunction;
 
 fn main() {
-    let num_players = 3;
+    let num_players = 2;
+    let n_rows = 6;
+    let n_cols = 7;
+    let n_in_a_row = 4;
     let search_depth = 6;
     let human_player = 0;  // human plays as player 0 (A)
-    let mut game = ConnectFour::new(6, 7, num_players);
+    // let mut game = ConnectFour::new(n_rows, n_cols, num_players, n_in_a_row);
+    let mut game = PushUpFour::new(n_rows, n_cols, num_players, n_in_a_row);
     let eval_function = RandomEvaluationFunction::new(num_players);
 
 

@@ -3,7 +3,7 @@ use crate::game::{GameState, Game};
 
 const SYMBOLS: [&str; 4] = ["A", "B", "C", "D"];
 
-pub struct ConnectFour {
+pub struct PushUpFour {
     state: GameState,
     num_rows: usize,
     num_cols: usize,
@@ -11,9 +11,9 @@ pub struct ConnectFour {
     n_in_a_row: usize,
 }
 
-impl ConnectFour {
+impl PushUpFour {
     pub fn new(num_rows: usize, num_cols: usize, num_players: usize, n_in_a_row: usize) -> Self {
-        ConnectFour {
+        PushUpFour {
             state: GameState::new(0, 0, vec![vec![-1; num_cols]; num_rows]),
             num_rows,
             num_cols,
@@ -79,9 +79,15 @@ impl ConnectFour {
         }
         false
     }
+
+    fn is_tie_after_transition(&self) -> bool {
+        // Check if more than one player wins after a move
+        let winners: Vec<bool> = (0..self.num_players).map(|player| self.is_win(player)).collect();
+        winners.iter().filter(|&&x| x).count() > 1
+    }
 }
 
-impl Game for ConnectFour {
+impl Game for PushUpFour {
     fn get_game_status(&self) -> i32 {
         if self.is_tie() {
             return -1;
@@ -119,13 +125,18 @@ impl Game for ConnectFour {
 
     fn transition(&mut self, move_col: usize) {
         let mut board_copy = self.state.get_board().clone();
-        for row in (0..self.num_rows).rev() {
-            if board_copy[row][move_col] == -1 {
-                board_copy[row][move_col] = self.state.get_to_move() as i32;
-                break;
-            }
+        
+        // Push the new chip up the bottom, shifting other chips up
+        for row in 0..self.num_rows - 1 {
+            board_copy[row][move_col] = board_copy[row + 1][move_col];
         }
-        self.state = GameState::new((self.state.get_to_move() + 1) % self.num_players, self.state.get_move_num() + 1, board_copy);
+        board_copy[self.num_rows - 1][move_col] = self.state.get_to_move() as i32;
+        
+        self.state = GameState::new(
+            (self.state.get_to_move() + 1) % self.num_players, 
+            self.state.get_move_num() + 1, 
+            board_copy
+        );
     }
 
     fn is_win(&self, player: usize) -> bool {
@@ -133,7 +144,7 @@ impl Game for ConnectFour {
     }
 
     fn is_tie(&self) -> bool {
-        self.state.get_move_num() == self.num_rows * self.num_cols
+        self.state.get_move_num() == self.num_rows * self.num_cols || self.is_tie_after_transition()
     }
 
     fn get_user_move(&self) -> usize {
@@ -172,3 +183,4 @@ impl Game for ConnectFour {
         println!("\nPlayer {}'s turn\n", SYMBOLS[self.state.get_to_move()]);
     }
 }
+

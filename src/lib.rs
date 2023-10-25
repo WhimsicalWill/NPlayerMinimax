@@ -6,47 +6,21 @@ mod eval;
 mod opt;
 
 use wasm_bindgen::prelude::*;
-
-// Other imports...
+use js_sys::Array;
 use crate::pushupfour::PushUpFour;
-use crate::game::{Game, GameState};
+use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
-use serde::{Serialize, Deserialize};
 
-// This is a simple struct to represent the game state in JS-compatible format
-#[wasm_bindgen]
-#[derive(Serialize, Deserialize)]
-pub struct JsGameState {
-    to_move: usize,
-    move_num: usize,
-    board: Vec<Vec<i32>>,
-}
-
-// Conversion from GameState to JsGameState
-impl From<&GameState> for JsGameState {
-    fn from(game_state: &GameState) -> Self {
-        // Your conversion logic here
-        JsGameState {
-            to_move: game_state.get_to_move(),
-            move_num: game_state.get_move_num(),
-            board: game_state.get_board().clone(),
-        }
-    }
-}
-// Expose a PushUpFour struct to JS.
-#[wasm_bindgen]
-pub struct PushUpFourGame {
+pub struct PushUpFourController {
     game: PushUpFour,
     eval_function: RandomEvaluationFunction,
     search_depth: usize,
 }
 
-#[wasm_bindgen]
-impl PushUpFourGame {
-    #[wasm_bindgen(constructor)]
-    pub fn new(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize) -> PushUpFourGame {
-        PushUpFourGame {
+impl PushUpFourController {
+    pub fn new(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize) -> PushUpFourController {
+        PushUpFourController {
             game: PushUpFour::new(n_rows, n_cols, num_players, n_in_a_row),
             eval_function: RandomEvaluationFunction::new(num_players),
             search_depth: 5,
@@ -54,19 +28,63 @@ impl PushUpFourGame {
     }
 
     // Make a move and get the AI's move (for simplicity)
-    pub fn make_move(&mut self, col: usize) -> JsGameState {
+    pub fn make_move(&mut self, col: usize) {
         self.game.transition(col);
 
         // AI's move logic, using minimax_move or any other method you have
+
         let (_, ai_move) = minimax_move(&mut self.game, &self.eval_function, self.search_depth);
         self.game.transition(ai_move);
-
-        let js_game_state = JsGameState::from(self.game.get_state());
-        js_game_state
     }
+}
 
-    pub fn get_state(&self) -> JsGameState {
-        let js_game_state = JsGameState::from(self.game.get_state());
-        js_game_state
+// Static mutable reference to store the game state
+static mut GAME_CONTROLLER: Option<PushUpFourController> = None;
+
+#[wasm_bindgen]
+pub fn initialize_game(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize) {
+    unsafe {
+        GAME_CONTROLLER = Some(PushUpFourController::new(n_rows, n_cols, num_players, n_in_a_row));
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_board() -> Array {
+    let rust_board;
+    unsafe {
+        rust_board = GAME_CONTROLLER.as_ref().unwrap().game.get_board().clone();
+    }
+    
+    let js_board = Array::new();
+    for row in rust_board.iter() {
+        let js_row = Array::new();
+        for &cell in row.iter() {
+            js_row.push(&JsValue::from(cell));
+        }
+        js_board.push(&js_row.into());
+    }
+    js_board
+}
+
+#[wasm_bindgen]
+pub fn get_to_move() -> usize {
+    unsafe {
+        GAME_CONTROLLER.as_ref().unwrap().game.get_to_move()
+    }
+}
+
+#[wasm_bindgen]
+pub fn get_num_moves() -> usize {
+    unsafe {
+        GAME_CONTROLLER.as_ref().unwrap().game.get_move_num()
+    }
+}
+
+// Make a move and get the AI's move (for simplicity)
+#[wasm_bindgen]
+pub fn make_move(col: usize) {
+    unsafe {
+        let game_controller = GAME_CONTROLLER.as_mut().unwrap();
+        game_controller.make_move(col);
     }
 }

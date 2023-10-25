@@ -22,8 +22,16 @@ impl PushUpFour {
         }
     }
 
+    pub fn get_board(&self) -> &Vec<Vec<i32>> {
+        &self.state.get_board()
+    }
+
     pub fn get_to_move(&self) -> usize {
         self.state.get_to_move()
+    }
+
+    pub fn get_move_num(&self) -> usize {
+        self.state.get_move_num()
     }
 
     pub fn get_num_players(&self) -> usize {

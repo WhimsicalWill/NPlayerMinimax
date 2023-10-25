@@ -53,6 +53,7 @@ name = "npmm"
 version = "0.1.0"
 dependencies = [
  "getrandom",
+ "js-sys",
  "rand",
  "serde",
  "serde-wasm-bindgen",

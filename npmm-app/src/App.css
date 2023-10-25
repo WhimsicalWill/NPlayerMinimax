@@ -1,24 +1,26 @@
 body {
     margin: 0;
     font-family: "Roboto", sans-serif;
+    background-color: #e6ecf0; /* Moved from .App to cover the whole body */
 }
 
 .App {
     text-align: center;
-    background-color: #e6ecf0; /* New background color */
+    height: 100vh; /* Ensure the App covers the full viewport height */
+    display: flex; /* Use flexbox to center content */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
 }
 
 .game-container {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     gap: 2rem; /* spacing between board and info panel */
 }
 
 .board {
     display: flex;
     flex-direction: column;
+    margin: 0 auto; /* Center the board in case there's any additional horizontal space */
 }
 
 .row {
@@ -27,7 +29,7 @@ body {
 }
 
 .cell {
-    width: 4rem; /* use rem instead of px */
+    width: 4rem;
     height: 4rem;
     font-size: 1.5rem;
     background-color: #ffffff;
@@ -40,11 +42,15 @@ body {
 }
 
 .info-panel {
-    color: #333; /* changed text color from white */
+    color: #333;
     font-size: 1rem;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.hidden-info {
+    visibility: hidden;
 }
 
 .reset-button {

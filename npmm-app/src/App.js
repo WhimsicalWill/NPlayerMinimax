@@ -55,8 +55,11 @@ function App() {
     // Trigger the AI move if appropriate
     useEffect(() => {
         if (toMove === 1 && status === -2) {
-            make_ai_move();
-            updateGameState();
+            // Provide a very small delay to allow the human move to render first
+            setTimeout(() => {
+                make_ai_move();
+                updateGameState();
+            }, 25);
         }
     }, [toMove, status]);
 
@@ -76,6 +79,16 @@ function App() {
     return (
         <div className="App">
             <div className="game-container">
+                <div className="info-panel hidden-info">
+                    <p>Next Move: {toMove === 0 ? "You" : "AI"}</p>
+                    <p>Total Moves: {moveNum}</p>
+                    <p>{statusText}</p>
+                    {status !== -2 && (
+                        <button className="reset-button" onClick={handleReset}>
+                            Reset Game
+                        </button>
+                    )}
+                </div>
                 <div className="board">
                     {board.map((row, rowIndex) => (
                         <div className="row" key={rowIndex}>
@@ -83,10 +96,8 @@ function App() {
                                 <button
                                     className="cell"
                                     key={cellIndex}
-                                    onClick={() =>
-                                        status === -2 && handleClick(cellIndex)
-                                    }
-                                    disabled={status !== -2}
+                                    onClick={() => handleClick(cellIndex)}
+                                    disabled={status !== -2 || toMove !== 0}
                                 >
                                     {cell}
                                 </button>

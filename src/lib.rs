@@ -1,6 +1,5 @@
 mod game;
 mod tictactoe;
-// mod connectfour;
 mod pushupfour;
 mod eval;
 mod opt;
@@ -11,6 +10,21 @@ use crate::pushupfour::PushUpFour;
 use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
+
+
+/*
+Using the Game trait, we can have polymorphism in our wasm_bindings
+The ControllerBuilder will take in an argument specifying which game to use
+It will create the corresponding game, which implements the Game trait
+Then, a set of functions will be defined for the ControllerBuilder that can be used in any game
+
+If possible, we want to use wasm_bindgen to expose the Game trait to JS
+Then, we can have a factory method that returns a certain game that implements the Game trait
+This will also mean that we will just need two extra functions: make_human_move and make_ai_move
+*/
+
+
+
 
 pub struct PushUpFourController {
     game: PushUpFour,
@@ -50,10 +64,10 @@ pub fn get_board() -> Array {
         let js_row = Array::new();
         for &cell in row.iter() {
             let value = match cell {
-                -1 => "-",
+                -1 => "",
                 0 => "X",
                 1 => "O",
-                _ => "-", // default
+                _ => "", // default
             };
             js_row.push(&JsValue::from_str(value));
         }

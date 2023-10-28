@@ -3,10 +3,11 @@ use crate::pushupfour::PushUpFour;
 use crate::game::Game;
 use crate::eval::EvaluationFunction;
 
-pub fn minimax_move(game: &mut PushUpFour,
-                    eval_func: &dyn EvaluationFunction,
-                    search_depth: usize
-                    ) -> (i32, usize) {
+pub fn minimax_move(
+    game: &mut PushUpFour,
+    eval_func: &dyn EvaluationFunction,
+    search_depth: usize
+) -> (i32, usize) {
     let num_players = game.get_num_players();
     let mut alphas = vec![0.0; num_players];
     let (_, best_move) = dfs(game, 0, &mut alphas, eval_func, search_depth);
@@ -15,11 +16,13 @@ pub fn minimax_move(game: &mut PushUpFour,
     (0, best_move)
 }
 
-fn dfs(game: &mut PushUpFour,
-       d: usize,
-       alphas: &mut Vec<f64>,
-       eval_func: &dyn EvaluationFunction,
-       search_depth: usize) -> (Vec<f64>, Option<usize>) {
+fn dfs(
+    game: &mut PushUpFour,
+    d: usize,
+    alphas: &mut Vec<f64>,
+    eval_func: &dyn EvaluationFunction,
+    search_depth: usize
+) -> (Vec<f64>, Option<usize>) {
     let status = game.get_game_status();
     if status != -2 {
         return (game.get_score(), None);

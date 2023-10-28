@@ -25,8 +25,6 @@ impl GameState {
     pub fn get_board(&self) -> &Vec<Vec<i32>> {
         &self.board
     }
-
-    // TODO: later, we should implement set_board to make minimax search more space efficient
 }
 
 pub trait Game {

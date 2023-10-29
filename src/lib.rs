@@ -1,117 +1,85 @@
 mod game;
-mod tictactoe;
 mod pushupfour;
 mod eval;
 mod opt;
+mod gametraits;
 
 use wasm_bindgen::prelude::*;
 use js_sys::Array;
-use crate::pushupfour::PushUpFour;
+use crate::pushupfour::{PushUpFourMoveValidator, PushUpFourGameTransition, PushUpFourWinCondition, PushUpFourTieCondition};
 use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
 
 
-/*
-Using the Game trait, we can have polymorphism in our wasm_bindings
-The ControllerBuilder will take in an argument specifying which game to use
-It will create the corresponding game, which implements the Game trait
-Then, a set of functions will be defined for the ControllerBuilder that can be used in any game
-
-If possible, we want to use wasm_bindgen to expose the Game trait to JS
-Then, we can have a factory method that returns a certain game that implements the Game trait
-This will also mean that we will just need two extra functions: make_human_move and make_ai_move
-*/
-
-
-
-
-pub struct PushUpFourController {
-    game: PushUpFour,
+#[wasm_bindgen]
+pub struct GameController {
+    game: Game,
     eval_function: RandomEvaluationFunction,
-    search_depth: usize,
 }
 
-impl PushUpFourController {
-    pub fn new(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize, search_depth: usize) -> PushUpFourController {
-        PushUpFourController {
-            game: PushUpFour::new(n_rows, n_cols, num_players, n_in_a_row),
-            eval_function: RandomEvaluationFunction::new(num_players),
-            search_depth,
+#[wasm_bindgen]
+pub fn create_game_controller() -> GameController {
+    const NUM_ROWS: usize = 6;
+    const NUM_COLS: usize = 7;
+    const NUM_PLAYERS: usize = 2;
+    const N_IN_A_ROW: usize = 4;
+    let game: Game = Game::new(
+        NUM_ROWS,
+        NUM_COLS,
+        NUM_PLAYERS,
+        N_IN_A_ROW,
+        Box::new(PushUpFourMoveValidator {}),
+        Box::new(PushUpFourGameTransition {}),
+        Box::new(PushUpFourWinCondition {}),
+        Box::new(PushUpFourTieCondition {}),
+    );
+    GameController { 
+        game,
+        eval_function: RandomEvaluationFunction::new(NUM_PLAYERS),
+    }
+}
+
+#[wasm_bindgen]
+impl GameController {
+    pub fn get_board(&self) -> Array {
+        let rust_board = self.game.get_board();
+        let js_board = Array::new();
+        for row in rust_board.iter() {
+            let js_row = Array::new();
+            for &cell in row.iter() {
+                let value = match cell {
+                    -1 => "",
+                    0 => "X",
+                    1 => "O",
+                    _ => "", // default
+                };
+                js_row.push(&JsValue::from_str(value));
+            }
+            js_board.push(&js_row.into());
         }
+        js_board
     }
-}
 
-// Static mutable reference to store the game state
-static mut CURRENT_GAME: Option<PushUpFourController> = None;
-
-#[wasm_bindgen]
-pub fn initialize_game(n_rows: usize, n_cols: usize, num_players: usize, n_in_a_row: usize, search_depth: usize) {
-    unsafe {
-        CURRENT_GAME = Some(PushUpFourController::new(n_rows, n_cols, num_players, n_in_a_row, search_depth));
+    pub fn get_to_move(&self) -> usize {
+        self.game.get_to_move()
     }
-}
 
-#[wasm_bindgen]
-pub fn get_board() -> Array {
-    let rust_board;
-    unsafe {
-        rust_board = CURRENT_GAME.as_ref().unwrap().game.get_board().clone();
+    pub fn get_move_num(&self) -> usize {
+        self.game.get_move_num()
     }
-    
-    let js_board = Array::new();
-    for row in rust_board.iter() {
-        let js_row = Array::new();
-        for &cell in row.iter() {
-            let value = match cell {
-                -1 => "",
-                0 => "X",
-                1 => "O",
-                _ => "", // default
-            };
-            js_row.push(&JsValue::from_str(value));
-        }
-        js_board.push(&js_row.into());
-    }
-    js_board
-}
 
-#[wasm_bindgen]
-pub fn get_to_move() -> usize {
-    unsafe {
-        CURRENT_GAME.as_ref().unwrap().game.get_to_move()
+    pub fn get_game_status(&self) -> i32 {
+        self.game.get_game_status()
     }
-}
 
-#[wasm_bindgen]
-pub fn get_num_moves() -> usize {
-    unsafe {
-        CURRENT_GAME.as_ref().unwrap().game.get_move_num()
+    pub fn make_ai_move(&mut self) {
+        const SEARCH_DEPTH: usize = 5;
+        let (_, move_col) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
+        self.game.transition(move_col);
     }
-}
 
-#[wasm_bindgen]
-pub fn make_human_move(col: usize) {
-    let game_controller;
-    unsafe {
-        game_controller = CURRENT_GAME.as_mut().unwrap();
-    }
-    game_controller.game.transition(col);
-}
-
-#[wasm_bindgen]
-pub fn make_ai_move() {
-    let game_controller;
-    unsafe {
-        game_controller = CURRENT_GAME.as_mut().unwrap();
-    }
-    let (_, ai_move) = minimax_move(&mut game_controller.game, &game_controller.eval_function, game_controller.search_depth);
-    game_controller.game.transition(ai_move);
-}
-
-#[wasm_bindgen]
-pub fn game_status() -> i32 {
-    unsafe {
-        CURRENT_GAME.as_ref().unwrap().game.get_game_status()
+    pub fn make_human_move(&mut self, move_col: usize) {
+        self.game.transition(move_col);
     }
 }

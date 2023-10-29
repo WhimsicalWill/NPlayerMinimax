@@ -1,10 +1,9 @@
 // use crate::connectfour::ConnectFour;
-use crate::pushupfour::PushUpFour;
 use crate::game::Game;
 use crate::eval::EvaluationFunction;
 
 pub fn minimax_move(
-    game: &mut PushUpFour,
+    game: &mut Game,
     eval_func: &dyn EvaluationFunction,
     search_depth: usize
 ) -> (i32, usize) {
@@ -17,7 +16,7 @@ pub fn minimax_move(
 }
 
 fn dfs(
-    game: &mut PushUpFour,
+    game: &mut Game,
     d: usize,
     alphas: &mut Vec<f64>,
     eval_func: &dyn EvaluationFunction,

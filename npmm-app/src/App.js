@@ -1,69 +1,41 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import init, {
-    initialize_game,
-    get_board,
-    get_to_move,
-    get_num_moves,
-    game_status,
+    create_game_controller,
     make_human_move,
     make_ai_move,
 } from "./pkg/npmm.js";
 
-const DEFAULT_ROWS = 6;
-const DEFAULT_COLS = 7;
-const DEFAULT_PLAYERS = 2;
-const DEFAULT_N_IN_A_ROW = 4;
-const DEFAULT_SEARCH_DEPTH = 7;
-
 function App() {
-    const [board, setBoard] = useState([]);
-    const [toMove, setToMove] = useState(0);
-    const [moveNum, setMoveNum] = useState(0);
-    const [status, setStatus] = useState(-2); // -2 means game is ongoing
+    const [gameController, setGameController] = useState(null);
 
     useEffect(() => {
-        init().then(() => {
-            handleReset();
-        });
+        init().then(handleReset);
     }, []);
 
     const handleReset = () => {
-        initialize_game(
-            DEFAULT_ROWS,
-            DEFAULT_COLS,
-            DEFAULT_PLAYERS,
-            DEFAULT_N_IN_A_ROW,
-            DEFAULT_SEARCH_DEPTH
-        );
-        updateGameState();
+        setGameController(create_game_controller());
     };
 
     const handleClick = (col) => {
-        make_human_move(col);
-        updateGameState();
+        make_human_move(gameController, col);
+        setGameController({ ...gameController });
     };
 
-    // A function to update the React state after each move
-    const updateGameState = () => {
-        setBoard(get_board());
-        setToMove(get_to_move());
-        setMoveNum(get_num_moves());
-        setStatus(game_status());
-    };
-
-    // Trigger the AI move if appropriate
     useEffect(() => {
-        if (toMove === 1 && status === -2) {
-            // Provide a very small delay to allow the human move to render first
+        if (
+            gameController?.get_to_move() === 1 &&
+            gameController?.get_game_status() === -2
+        ) {
             setTimeout(() => {
-                make_ai_move();
-                updateGameState();
+                make_ai_move(gameController);
+                setGameController({ ...gameController });
             }, 25);
         }
-    }, [toMove, status]);
+    }, [gameController]);
 
     let statusText;
+    const status = gameController?.get_game_status();
     switch (status) {
         case -2:
             statusText = "Game Ongoing";
@@ -79,25 +51,19 @@ function App() {
     return (
         <div className="App">
             <div className="game-container">
-                <div className="info-panel hidden-info">
-                    <p>Next Move: {toMove === 0 ? "You" : "AI"}</p>
-                    <p>Total Moves: {moveNum}</p>
-                    <p>{statusText}</p>
-                    {status !== -2 && (
-                        <button className="reset-button" onClick={handleReset}>
-                            Reset Game
-                        </button>
-                    )}
-                </div>
+                {/* ... */}
                 <div className="board">
-                    {board.map((row, rowIndex) => (
+                    {gameController?.get_board().map((row, rowIndex) => (
                         <div className="row" key={rowIndex}>
                             {row.map((cell, cellIndex) => (
                                 <button
                                     className="cell"
                                     key={cellIndex}
                                     onClick={() => handleClick(cellIndex)}
-                                    disabled={status !== -2 || toMove !== 0}
+                                    disabled={
+                                        status !== -2 ||
+                                        gameController?.get_to_move() !== 0
+                                    }
                                 >
                                     {cell}
                                 </button>
@@ -106,8 +72,11 @@ function App() {
                     ))}
                 </div>
                 <div className="info-panel">
-                    <p>Next Move: {toMove === 0 ? "You" : "AI"}</p>
-                    <p>Total Moves: {moveNum}</p>
+                    <p>
+                        Next Move:{" "}
+                        {gameController?.get_to_move() === 0 ? "You" : "AI"}
+                    </p>
+                    <p>Total Moves: {gameController?.get_move_num()}</p>
                     <p>{statusText}</p>
                     {status !== -2 && (
                         <button className="reset-button" onClick={handleReset}>

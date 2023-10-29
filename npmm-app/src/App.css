@@ -68,3 +68,8 @@ body {
 .reset-button:hover {
     background-color: #ff7c7c;
 }
+
+.selected {
+    background-color: #4caf50; /* Or any highlight color */
+    color: white;
+}

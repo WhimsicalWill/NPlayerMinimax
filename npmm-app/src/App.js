@@ -8,6 +8,7 @@ function App() {
     const [toMove, setToMove] = useState(0);
     const [moveNum, setMoveNum] = useState(0);
     const [status, setStatus] = useState(-2); // -2 means game is ongoing
+    const [numPlayers, setNumPlayers] = useState(2);
 
     // A function to update the React state after each move
     const updateGameState = useCallback(() => {
@@ -18,21 +19,26 @@ function App() {
     }, []);
 
     const handleReset = useCallback(() => {
-        gameControllerRef.current = create_game_controller();
+        gameControllerRef.current = create_game_controller(numPlayers);
         updateGameState();
-    }, [updateGameState]);
+    }, [numPlayers, updateGameState]);
+
+    const handlePlayerSelection = (players) => {
+        setNumPlayers(players);
+        handleReset();
+    };
 
     useEffect(() => {
         init().then(handleReset);
     }, [handleReset]);
 
-    const handleClick = (col) => {
+    const handleClick = (row, col) => {
         gameControllerRef.current.make_human_move(col);
         updateGameState();
     };
 
     useEffect(() => {
-        if (toMove === 1 && status === -2) {
+        if (toMove !== 0 && status === -2) {
             setTimeout(() => {
                 gameControllerRef.current.make_ai_move();
                 updateGameState();
@@ -53,6 +59,17 @@ function App() {
 
     return (
         <div className="App">
+            <div className="player-selection">
+                {[2, 3, 4].map((num) => (
+                    <button
+                        key={num}
+                        onClick={() => handlePlayerSelection(num)}
+                        className={numPlayers === num ? "selected" : ""}
+                    >
+                        {num} Players
+                    </button>
+                ))}
+            </div>
             <div className="game-container">
                 <div className="board">
                     {board.map((row, rowIndex) => (
@@ -61,7 +78,9 @@ function App() {
                                 <button
                                     className="cell"
                                     key={cellIndex}
-                                    onClick={() => handleClick(cellIndex)}
+                                    onClick={() =>
+                                        handleClick(rowIndex, cellIndex)
+                                    }
                                     disabled={status !== -2 || toMove !== 0}
                                 >
                                     {cell}

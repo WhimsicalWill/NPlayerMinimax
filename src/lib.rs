@@ -19,15 +19,14 @@ pub struct GameController {
 }
 
 #[wasm_bindgen]
-pub fn create_game_controller() -> GameController {
+pub fn create_game_controller(num_players: usize) -> GameController {
     const NUM_ROWS: usize = 6;
     const NUM_COLS: usize = 7;
-    const NUM_PLAYERS: usize = 2;
     const N_IN_A_ROW: usize = 4;
     let game: Game = Game::new(
         NUM_ROWS,
         NUM_COLS,
-        NUM_PLAYERS,
+        num_players,
         N_IN_A_ROW,
         Box::new(PushUpFourMoveValidator {}),
         Box::new(PushUpFourGameTransition {}),
@@ -36,7 +35,7 @@ pub fn create_game_controller() -> GameController {
     );
     GameController { 
         game,
-        eval_function: RandomEvaluationFunction::new(NUM_PLAYERS),
+        eval_function: RandomEvaluationFunction::new(num_players),
     }
 }
 
@@ -52,6 +51,8 @@ impl GameController {
                     -1 => "",
                     0 => "X",
                     1 => "O",
+                    2 => "Z",
+                    3 => "W",
                     _ => "", // default
                 };
                 js_row.push(&JsValue::from_str(value));
@@ -80,6 +81,10 @@ impl GameController {
     }
 
     pub fn make_human_move(&mut self, move_col: usize) {
+        let valid_moves = self.game.get_valid_moves();
+        if !valid_moves.contains(&move_col) {
+            return; // TODO: return a status code
+        }
         self.game.transition(move_col);
     }
 }

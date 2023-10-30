@@ -1,11 +1,13 @@
 use crate::game::{Game, GameState};
 
-pub trait MoveValidator {
-    fn get_valid_moves(&self, game: &Game) -> Vec<usize>;
+pub trait AvailableMoves {
+    // The ai function doesn't include redundant moves; this makes search faster
+    fn get_valid_ai_moves(&self, game: &Game) -> Vec<(usize, usize)>;
+    fn get_valid_human_moves(&self, game: &Game) -> Vec<(usize, usize)>;
 }
 
 pub trait GameTransition {
-    fn transition(&self, game: &Game, move_col: usize) -> GameState;
+    fn transition(&self, game: &Game, move_row: usize, move_col: usize) -> GameState;
 }
 
 pub trait WinCondition {

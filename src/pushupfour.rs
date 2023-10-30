@@ -1,18 +1,38 @@
-use crate::gametraits::{MoveValidator, GameTransition, WinCondition, TieCondition};
+use crate::gametraits::{AvailableMoves, GameTransition, WinCondition, TieCondition};
 use crate::game::{Game, GameState};
 
-// TODO: add a trait for handling the board representation
+pub struct PushUpFourAvailableMoves;
+impl AvailableMoves for PushUpFourAvailableMoves {
+    // For humans, return all empty squares.
+    fn get_valid_human_moves(&self, game: &Game) -> Vec<(usize, usize)> {
+        let mut moves = Vec::new();
+        for (row, cols) in game.get_state().get_board().iter().enumerate() {
+            for (col, &cell) in cols.iter().enumerate() {
+                if cell == -1 {  // -1 indicating the cell is empty
+                    moves.push((row, col));
+                }
+            }
+        }
+        moves
+    }
 
-pub struct PushUpFourMoveValidator;
-impl MoveValidator for PushUpFourMoveValidator {
-    fn get_valid_moves(&self, game: &Game) -> Vec<usize> {
-        (0..game.get_num_cols()).filter(|&col| game.get_state().get_board()[0][col] == -1).collect()
+    // For AI, check only the top row in each column and return the empty spots.
+    fn get_valid_ai_moves(&self, game: &Game) -> Vec<(usize, usize)> {
+        (0..game.get_num_cols())
+            .filter_map(|col| {
+                if game.get_state().get_board()[0][col] == -1 {
+                    Some((0, col))  // (row, col) with row being 0 (top row)
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
 
 pub struct PushUpFourGameTransition;
 impl GameTransition for PushUpFourGameTransition {
-    fn transition(&self, game: &Game, move_col: usize) -> GameState {
+    fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> GameState {
         let mut board_copy = game.get_state().get_board().clone();
         
         // Push the new chip up the bottom, shifting other chips up
@@ -104,13 +124,12 @@ pub fn is_diag_win(game: &Game, player: usize) -> bool {
     false
 }
 
-fn is_tie_after_transition(game: &Game) -> bool {
+pub fn is_tie_after_transition(game: &Game) -> bool {
     let num_players = game.get_num_players();
     let winners: Vec<bool> = (0..num_players).map(|player| is_win(game, player)).collect();
     winners.iter().filter(|&&x| x).count() > 1
 }
 
-// Note: You might need a similar `is_win` function that works with game: &Game
 pub fn is_win(game: &Game, player: usize) -> bool {
     is_row_win(game, player) || is_col_win(game, player) || is_diag_win(game, player)
 }

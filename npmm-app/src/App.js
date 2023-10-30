@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./App.css";
+import GameDescriptionBox from "./GameDescriptionBox"; // Import the new component
 import init, { create_game_controller } from "./pkg/npmm.js";
 
 function App() {
@@ -33,7 +34,7 @@ function App() {
     }, [handleReset]);
 
     const handleClick = (row, col) => {
-        gameControllerRef.current.make_human_move(col);
+        gameControllerRef.current.make_human_move(row, col);
         updateGameState();
     };
 
@@ -70,6 +71,7 @@ function App() {
                     </button>
                 ))}
             </div>
+            <GameDescriptionBox />
             <div className="game-container">
                 <div className="board">
                     {board.map((row, rowIndex) => (

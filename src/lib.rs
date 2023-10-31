@@ -1,14 +1,12 @@
 mod game;
 mod pushupfour;
-mod go;
 mod eval;
 mod opt;
 mod gametraits;
 
 use wasm_bindgen::prelude::*;
 use js_sys::Array;
-use crate::pushupfour::{PushUpFourAvailableMoves, PushUpFourGameTransition, PushUpFourWinCondition, PushUpFourTieCondition};
-use crate::go::{GoAvailableMoves, GoGameTransition, GoWinCondition, GoTieCondition};
+use crate::pushupfour::{PushUpFourMoveValidator, PushUpFourGameTransition, PushUpFourWinCondition, PushUpFourTieCondition};
 use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
@@ -30,14 +28,10 @@ pub fn create_game_controller(num_players: usize) -> GameController {
         NUM_COLS,
         num_players,
         N_IN_A_ROW,
-        Box::new(PushUpFourAvailableMoves {}),
+        Box::new(PushUpFourMoveValidator {}),
         Box::new(PushUpFourGameTransition {}),
         Box::new(PushUpFourWinCondition {}),
         Box::new(PushUpFourTieCondition {}),
-        // Box::new(GoAvailableMoves {}),
-        // Box::new(GoGameTransition {}),
-        // Box::new(GoWinCondition {}),
-        // Box::new(GoTieCondition {}),
     );
     GameController { 
         game,
@@ -82,22 +76,15 @@ impl GameController {
 
     pub fn make_ai_move(&mut self) {
         const SEARCH_DEPTH: usize = 5;
-        let (_, (move_row, move_col)) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
-        self.game.transition(move_row, move_col);
+        let (_, move_col) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
+        self.game.transition(move_col);
     }
 
-pub fn make_human_move(&mut self, move_row: usize, move_col: usize) {
-    let valid_moves = self.game.get_valid_human_moves();
-    
-    let move_is_valid = valid_moves.iter().any(
-        |&(row, col)| row == move_row && col == move_col
-    );
-
-    if !move_is_valid {
-        return; // TODO: return a status code
+    pub fn make_human_move(&mut self, move_col: usize) {
+        let valid_moves = self.game.get_valid_moves();
+        if !valid_moves.contains(&move_col) {
+            return; // TODO: return a status code
+        }
+        self.game.transition(move_col);
     }
-    
-    self.game.transition(move_row, move_col);
-}
-
 }

@@ -9,6 +9,7 @@ function App() {
     const [moveNum, setMoveNum] = useState(0);
     const [status, setStatus] = useState(-2); // -2 means game is ongoing
     const [numPlayers, setNumPlayers] = useState(2);
+    const [availableMoves, setAvailableMoves] = useState([]);
 
     // A function to update the React state after each move
     const updateGameState = useCallback(() => {
@@ -16,6 +17,7 @@ function App() {
         setToMove(gameControllerRef.current.get_to_move());
         setMoveNum(gameControllerRef.current.get_move_num());
         setStatus(gameControllerRef.current.get_game_status());
+        setAvailableMoves(gameControllerRef.current.get_valid_moves());
     }, []);
 
     const handleReset = useCallback(() => {
@@ -33,7 +35,7 @@ function App() {
     }, [handleReset]);
 
     const handleClick = (row, col) => {
-        gameControllerRef.current.make_human_move(col);
+        gameControllerRef.current.make_human_move(row, col);
         updateGameState();
     };
 
@@ -74,18 +76,36 @@ function App() {
                 <div className="board">
                     {board.map((row, rowIndex) => (
                         <div className="row" key={rowIndex}>
-                            {row.map((cell, cellIndex) => (
-                                <button
-                                    className="cell"
-                                    key={cellIndex}
-                                    onClick={() =>
-                                        handleClick(rowIndex, cellIndex)
-                                    }
-                                    disabled={status !== -2 || toMove !== 0}
-                                >
-                                    {cell}
-                                </button>
-                            ))}
+                            {row.map((cell, cellIndex) => {
+                                // Check if this cell is a valid move
+                                const isValidMove = availableMoves.some(
+                                    (move) =>
+                                        move[0] === rowIndex &&
+                                        move[1] === cellIndex
+                                );
+
+                                // Conditional className based on whether the cell is a valid move
+                                const cellClass = isValidMove
+                                    ? "cell valid-move"
+                                    : "cell";
+
+                                return (
+                                    <button
+                                        className={cellClass}
+                                        key={cellIndex}
+                                        onClick={() =>
+                                            handleClick(rowIndex, cellIndex)
+                                        }
+                                        disabled={
+                                            status !== -2 ||
+                                            toMove !== 0 ||
+                                            !isValidMove
+                                        }
+                                    >
+                                        {cell}
+                                    </button>
+                                );
+                            })}
                         </div>
                     ))}
                 </div>

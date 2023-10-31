@@ -1,10 +1,9 @@
-use crate::gametraits::{AvailableMoves, GameTransition, WinCondition, TieCondition};
+use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
 use crate::game::{Game, GameState};
 use std::collections::HashSet;
 
-pub struct GoAvailableMoves;
-
-impl AvailableMoves for GoAvailableMoves {
+pub struct GoValidMoves;
+impl ValidMoves for GoValidMoves {
     fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
         let board = game.get_state().get_board();
         let mut valid_moves = Vec::new();
@@ -20,9 +19,8 @@ impl AvailableMoves for GoAvailableMoves {
     }
 }
 
-pub struct GoGameTransition;
-
-impl GameTransition for GoGameTransition {
+pub struct GoTransitionFunction;
+impl TransitionFunction for GoTransitionFunction {
     fn transition(&self, game: &Game, move_row: usize, move_col: usize) -> GameState {
         let mut board_copy = game.get_state().get_board().clone();
         let current_player = game.get_state().get_to_move();
@@ -41,7 +39,6 @@ impl GameTransition for GoGameTransition {
 }
 
 pub struct GoWinCondition;
-
 impl WinCondition for GoWinCondition {
     fn is_win(&self, _game: &Game, _player: usize) -> bool {
         // Implement scoring logic to determine winner
@@ -51,7 +48,6 @@ impl WinCondition for GoWinCondition {
 }
 
 pub struct GoTieCondition;
-
 impl TieCondition for GoTieCondition {
     fn is_tie(&self, _game: &Game) -> bool {
         // Implement scoring logic to determine winner

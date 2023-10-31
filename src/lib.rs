@@ -6,7 +6,7 @@ mod gametraits;
 
 use wasm_bindgen::prelude::*;
 use js_sys::Array;
-use crate::pushupfour::{PushUpFourMoveValidator, PushUpFourGameTransition, PushUpFourWinCondition, PushUpFourTieCondition};
+use crate::pushupfour::{PushUpFourValidMoves, PushUpFourTransitionFunction, PushUpFourWinCondition, PushUpFourTieCondition};
 use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
@@ -28,8 +28,8 @@ pub fn create_game_controller(num_players: usize) -> GameController {
         NUM_COLS,
         num_players,
         N_IN_A_ROW,
-        Box::new(PushUpFourMoveValidator {}),
-        Box::new(PushUpFourGameTransition {}),
+        Box::new(PushUpFourValidMoves {}),
+        Box::new(PushUpFourTransitionFunction {}),
         Box::new(PushUpFourWinCondition {}),
         Box::new(PushUpFourTieCondition {}),
     );
@@ -81,16 +81,18 @@ impl GameController {
     }
 
     pub fn make_human_move(&mut self, move_row: usize, move_col: usize) {
-        let valid_moves = self.game.get_valid_moves();
-        
-        let move_is_valid = valid_moves.iter().any(
-            |&(row, col)| row == move_row && col == move_col
-        );
-
-        if !move_is_valid {
-            return; // TODO: return a status code
-        }
-        
         self.game.transition(move_row, move_col);
+    }
+
+    pub fn get_valid_moves(&self) -> Array {
+        let valid_moves = Array::new();
+        for &(row, col) in self.game.get_valid_moves().iter() {
+            let arr = Array::new();
+            arr.push(&JsValue::from_f64(row as f64));
+            arr.push(&JsValue::from_f64(col as f64));
+            valid_moves.push(&arr.into());
         }
+
+        valid_moves
+    }
 }

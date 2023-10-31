@@ -1,8 +1,8 @@
-use crate::gametraits::{MoveValidator, GameTransition, WinCondition, TieCondition};
+use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
 use crate::game::{Game, GameState};
 
-pub struct PushUpFourMoveValidator;
-impl MoveValidator for PushUpFourMoveValidator {
+pub struct PushUpFourValidMoves;
+impl ValidMoves for PushUpFourValidMoves {
     fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
         let bottom_row = game.get_num_rows() - 1;
         (0..game.get_num_cols())
@@ -17,8 +17,8 @@ impl MoveValidator for PushUpFourMoveValidator {
     }
 }
 
-pub struct PushUpFourGameTransition;
-impl GameTransition for PushUpFourGameTransition {
+pub struct PushUpFourTransitionFunction;
+impl TransitionFunction for PushUpFourTransitionFunction {
     fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> GameState {
         let mut board_copy = game.get_state().get_board().clone();
         

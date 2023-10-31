@@ -1,5 +1,4 @@
-// use std::mem;
-use crate::gametraits::{MoveValidator, GameTransition, WinCondition, TieCondition};
+use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
 
 // TODO: why do we need Clone here and not just copy (if all of the fields are copyable?)
 #[derive(Clone)]
@@ -37,8 +36,8 @@ pub struct Game {
     num_cols: usize,
     num_players: usize,
     n_in_a_row: usize,
-    move_validator: Box<dyn MoveValidator>,
-    game_transition: Box<dyn GameTransition>,
+    valid_moves: Box<dyn ValidMoves>,
+    transition_function: Box<dyn TransitionFunction>,
     win_condition: Box<dyn WinCondition>,
     tie_condition: Box<dyn TieCondition>,
 }
@@ -49,8 +48,8 @@ impl Game {
         num_cols: usize,
         num_players: usize,
         n_in_a_row: usize,
-        move_validator: Box<dyn MoveValidator>,
-        game_transition: Box<dyn GameTransition>,
+        valid_moves: Box<dyn ValidMoves>,
+        transition_function: Box<dyn TransitionFunction>,
         win_condition: Box<dyn WinCondition>,
         tie_condition: Box<dyn TieCondition>,
     ) -> Game {
@@ -60,8 +59,8 @@ impl Game {
             num_cols,
             num_players,
             n_in_a_row,
-            move_validator,
-            game_transition,
+            valid_moves,
+            transition_function,
             win_condition,
             tie_condition,
         }
@@ -128,11 +127,11 @@ impl Game {
 
     // Below: functions that call the dependency injected functions
     pub fn get_valid_moves(&self) -> Vec<(usize, usize)> {
-        self.move_validator.get_valid_moves(self)
+        self.valid_moves.get_valid_moves(self)
     }
 
     pub fn transition(&mut self, move_row: usize, move_col: usize) {
-        self.state = self.game_transition.transition(self, move_row, move_col);
+        self.state = self.transition_function.transition(self, move_row, move_col);
     }
 
     pub fn is_win(&self, player: usize) -> bool {

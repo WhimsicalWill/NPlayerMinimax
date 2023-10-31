@@ -37,10 +37,6 @@ body {
     transition: background-color 0.3s;
 }
 
-.cell:hover {
-    background-color: #e6e6e6;
-}
-
 .info-panel {
     color: #333;
     font-size: 1rem;
@@ -72,4 +68,12 @@ body {
 .selected {
     background-color: #4caf50; /* Or any highlight color */
     color: white;
+}
+
+.cell.valid-move {
+    background-color: #d3d3d3; /* Slightly darker than the normal cell */
+}
+
+.cell.valid-move:hover {
+    background-color: #c0c0c0; /* Even darker on hover for emphasis */
 }

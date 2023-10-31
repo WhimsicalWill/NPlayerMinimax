@@ -127,12 +127,12 @@ impl Game {
     }
 
     // Below: functions that call the dependency injected functions
-    pub fn get_valid_moves(&self) -> Vec<usize> {
+    pub fn get_valid_moves(&self) -> Vec<(usize, usize)> {
         self.move_validator.get_valid_moves(self)
     }
 
-    pub fn transition(&mut self, move_col: usize) {
-        self.state = self.game_transition.transition(self, move_col);
+    pub fn transition(&mut self, move_row: usize, move_col: usize) {
+        self.state = self.game_transition.transition(self, move_row, move_col);
     }
 
     pub fn is_win(&self, player: usize) -> bool {

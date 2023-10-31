@@ -1,11 +1,11 @@
 use crate::game::{Game, GameState};
 
 pub trait MoveValidator {
-    fn get_valid_moves(&self, game: &Game) -> Vec<usize>;
+    fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)>;
 }
 
 pub trait GameTransition {
-    fn transition(&self, game: &Game, move_col: usize) -> GameState;
+    fn transition(&self, game: &Game, move_row: usize, move_col: usize) -> GameState;
 }
 
 pub trait WinCondition {

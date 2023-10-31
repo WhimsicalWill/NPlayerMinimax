@@ -1,18 +1,25 @@
 use crate::gametraits::{MoveValidator, GameTransition, WinCondition, TieCondition};
 use crate::game::{Game, GameState};
 
-// TODO: add a trait for handling the board representation
-
 pub struct PushUpFourMoveValidator;
 impl MoveValidator for PushUpFourMoveValidator {
-    fn get_valid_moves(&self, game: &Game) -> Vec<usize> {
-        (0..game.get_num_cols()).filter(|&col| game.get_state().get_board()[0][col] == -1).collect()
+    fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
+        let bottom_row = game.get_num_rows() - 1;
+        (0..game.get_num_cols())
+            .filter_map(|col| {
+                if game.get_state().get_board()[0][col] == -1 {
+                    Some((bottom_row, col))  // (row, col) with origin at the top left
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
 
 pub struct PushUpFourGameTransition;
 impl GameTransition for PushUpFourGameTransition {
-    fn transition(&self, game: &Game, move_col: usize) -> GameState {
+    fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> GameState {
         let mut board_copy = game.get_state().get_board().clone();
         
         // Push the new chip up the bottom, shifting other chips up

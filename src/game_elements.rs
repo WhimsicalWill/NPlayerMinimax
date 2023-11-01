@@ -1,3 +1,6 @@
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
 pub enum Player {
     Player0,
     Player1,
@@ -28,6 +31,7 @@ impl Player {
     }
 }
 
+#[wasm_bindgen]
 pub enum GameStatus {
     Ongoing,
     Tie,

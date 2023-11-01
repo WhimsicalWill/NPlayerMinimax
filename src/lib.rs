@@ -1,15 +1,17 @@
-mod game;
 mod eval;
 mod opt;
-mod gametraits;
-mod pushupfour;
-mod usergame;
+mod game;
+mod game_elements;
+mod game_traits;
+mod push_up_four;
+mod user_game;
 
 use wasm_bindgen::prelude::*;
 use js_sys::Array;
 // use crate::pushupfour::{PushUpFourValidMoves, PushUpFourTransitionFunction, PushUpFourWinCondition, PushUpFourTieCondition};
-use crate::usergame::{UserGameValidMoves, UserGameTransitionFunction, UserGameWinCondition, UserGameTieCondition};
+use crate::user_game::{UserGameInitialState, UserGameValidMoves, UserGameTransitionFunction, UserGameWinCondition, UserGameTieCondition};
 use crate::game::Game;
+use crate::game_elements::{Player, GameStatus, BoardCell};
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
 
@@ -23,12 +25,11 @@ pub struct GameController {
 pub fn create_game_controller(num_players: usize) -> GameController {
     const NUM_ROWS: usize = 6;
     const NUM_COLS: usize = 7;
-    const N_IN_A_ROW: usize = 4;
     let game: Game = Game::new(
         NUM_ROWS,
         NUM_COLS,
         num_players,
-        N_IN_A_ROW,
+        Box::new(UserGameInitialState {}),
         Box::new(UserGameValidMoves {}),
         Box::new(UserGameTransitionFunction {}),
         Box::new(UserGameWinCondition {}),
@@ -44,26 +45,25 @@ pub fn create_game_controller(num_players: usize) -> GameController {
 impl GameController {
     pub fn get_board(&self) -> Array {
         let rust_board = self.game.get_board();
-        let js_board = Array::new();
-        for row in rust_board.iter() {
-            let js_row = Array::new();
-            for &cell in row.iter() {
+        let js_board = Array::new_with_length(rust_board.len() as u32);
+        for (i, row) in rust_board.iter().enumerate() {
+            let js_row = Array::new_with_length(row.len() as u32);
+            for (j, &cell) in row.iter().enumerate() {
                 let value = match cell {
-                    -1 => "",
-                    0 => "X",
-                    1 => "O",
-                    2 => "Z",
-                    3 => "W",
-                    _ => "", // default
+                    BoardCell::Empty => "",
+                    BoardCell::Occupied(Player::Player0) => "X",
+                    BoardCell::Occupied(Player::Player1) => "O",
+                    BoardCell::Occupied(Player::Player2) => "Z",
+                    BoardCell::Occupied(Player::Player3) => "W",
                 };
-                js_row.push(&JsValue::from_str(value));
+                js_row.set(j as u32, JsValue::from_str(value));
             }
-            js_board.push(&js_row.into());
+            js_board.set(i as u32, js_row.into());
         }
         js_board
     }
 
-    pub fn get_to_move(&self) -> usize {
+    pub fn get_to_move(&self) -> Player {
         self.game.get_to_move()
     }
 
@@ -71,7 +71,7 @@ impl GameController {
         self.game.get_move_num()
     }
 
-    pub fn get_game_status(&self) -> i32 {
+    pub fn get_game_status(&self) -> GameStatus {
         self.game.get_game_status()
     }
 

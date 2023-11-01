@@ -1,16 +1,16 @@
-use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
+use crate::game_traits::{InitialState, ValidMoves, TransitionFunction, WinCondition, TieCondition};
 use crate::game_elements::{Player, GameStatus, BoardCell};
 
 // TODO: why do we need Clone here and not just copy (if all of the fields are copyable?)
 #[derive(Clone)]
 pub struct GameState {
-    to_move: usize,
+    to_move: Player,
     move_num: usize,
     board: Vec<Vec<BoardCell>>,
 }
 
 impl GameState {
-    pub fn new(to_move: usize, move_num: usize, board: Vec<Vec<BoardCell>>) -> Self {
+    pub fn new(to_move: Player, move_num: usize, board: Vec<Vec<BoardCell>>) -> Self {
         GameState {
             to_move,
             move_num,

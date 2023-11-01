@@ -1,16 +1,17 @@
 mod game;
-mod pushupfour;
 mod eval;
 mod opt;
 mod gametraits;
+mod pushupfour;
+mod usergame;
 
 use wasm_bindgen::prelude::*;
 use js_sys::Array;
-use crate::pushupfour::{PushUpFourValidMoves, PushUpFourTransitionFunction, PushUpFourWinCondition, PushUpFourTieCondition};
+// use crate::pushupfour::{PushUpFourValidMoves, PushUpFourTransitionFunction, PushUpFourWinCondition, PushUpFourTieCondition};
+use crate::usergame::{UserGameValidMoves, UserGameTransitionFunction, UserGameWinCondition, UserGameTieCondition};
 use crate::game::Game;
 use crate::eval::RandomEvaluationFunction;
 use crate::opt::minimax_move;
-
 
 #[wasm_bindgen]
 pub struct GameController {
@@ -28,10 +29,10 @@ pub fn create_game_controller(num_players: usize) -> GameController {
         NUM_COLS,
         num_players,
         N_IN_A_ROW,
-        Box::new(PushUpFourValidMoves {}),
-        Box::new(PushUpFourTransitionFunction {}),
-        Box::new(PushUpFourWinCondition {}),
-        Box::new(PushUpFourTieCondition {}),
+        Box::new(UserGameValidMoves {}),
+        Box::new(UserGameTransitionFunction {}),
+        Box::new(UserGameWinCondition {}),
+        Box::new(UserGameTieCondition {}),
     );
     GameController { 
         game,

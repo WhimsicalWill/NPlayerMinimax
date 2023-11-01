@@ -1,15 +1,16 @@
 use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
+use crate::game_elements::{Player, GameStatus, BoardCell};
 
 // TODO: why do we need Clone here and not just copy (if all of the fields are copyable?)
 #[derive(Clone)]
 pub struct GameState {
     to_move: usize,
     move_num: usize,
-    board: Vec<Vec<i32>>,
+    board: Vec<Vec<BoardCell>>,
 }
 
 impl GameState {
-    pub fn new(to_move: usize, move_num: usize, board: Vec<Vec<i32>>) -> Self {
+    pub fn new(to_move: usize, move_num: usize, board: Vec<Vec<BoardCell>>) -> Self {
         GameState {
             to_move,
             move_num,
@@ -17,7 +18,7 @@ impl GameState {
         }
     }
 
-    pub fn get_to_move(&self) -> usize {
+    pub fn get_to_move(&self) -> Player {
         self.to_move
     }
 
@@ -25,7 +26,7 @@ impl GameState {
         self.move_num
     }
 
-    pub fn get_board(&self) -> &Vec<Vec<i32>> {
+    pub fn get_board(&self) -> &Vec<Vec<BoardCell>> {
         &self.board
     }
 }
@@ -35,7 +36,7 @@ pub struct Game {
     num_rows: usize,
     num_cols: usize,
     num_players: usize,
-    n_in_a_row: usize,
+    initial_state: Box<dyn InitialState>, // New way to inject initial board
     valid_moves: Box<dyn ValidMoves>,
     transition_function: Box<dyn TransitionFunction>,
     win_condition: Box<dyn WinCondition>,
@@ -44,21 +45,21 @@ pub struct Game {
 
 impl Game {
     pub fn new(
-        num_rows: usize,
-        num_cols: usize,
+        num_rows,
+        num_cols,
         num_players: usize,
-        n_in_a_row: usize,
+        initial_state: Box<dyn InitialState>,
         valid_moves: Box<dyn ValidMoves>,
         transition_function: Box<dyn TransitionFunction>,
         win_condition: Box<dyn WinCondition>,
         tie_condition: Box<dyn TieCondition>,
     ) -> Game {
         Game {
-            state: GameState::new(0, 0, vec![vec![-1; num_cols]; num_rows]),
+            state: GameState::new(initial_state.get_to_move(), initial_state.get_move_num(), initial_state.get_board()),
             num_rows,
             num_cols,
             num_players,
-            n_in_a_row,
+            initial_state,
             valid_moves,
             transition_function,
             win_condition,
@@ -66,26 +67,27 @@ impl Game {
         }
     }
 
-    pub fn get_game_status(&self) -> i32 {
+    pub fn get_game_status(&self) -> GameStatus {
         if self.is_tie() {
-            return -1;
+            return GameStatus::Tie;
         }
         for player in 0..self.num_players {
             if self.is_win(player) {
-                return player as i32;
+                return GameStatus::Win(Player::from(player));
             }
         }
-        -2
+        return GameStatus::Ongoing;
     }
 
     pub fn get_score(&self) -> Vec<f64> {
-        let res = self.get_game_status();
-        if res < 0 {
-            return vec![1.0 / self.num_players as f64; self.num_players];
-        } else {
-            let mut score = vec![0.0; self.num_players];
-            score[res as usize] = 1.0;
-            score
+        match self.get_game_status() {
+            GameStatus::Tie => vec![1.0 / self.num_players as f64; self.num_players],
+            GameStatus::Win(player) => {
+                let mut score = vec![0.0; self.num_players];
+                score[player.to_usize()] = 1.0;
+                score
+            }
+            _ => vec![0.0; self.num_players],
         }
     }
 
@@ -105,15 +107,11 @@ impl Game {
         self.num_players
     }
 
-    pub fn get_n_in_a_row(&self) -> usize {
-        self.n_in_a_row
-    }
-
-    pub fn get_board(&self) -> &Vec<Vec<i32>> {
+    pub fn get_board(&self) -> &Vec<Vec<BoardCell>> {
         self.state.get_board()
     }
 
-    pub fn get_to_move(&self) -> usize {
+    pub fn get_to_move(&self) -> Player {
         self.state.get_to_move()
     }
 
@@ -134,7 +132,7 @@ impl Game {
         self.state = self.transition_function.transition(self, move_row, move_col);
     }
 
-    pub fn is_win(&self, player: usize) -> bool {
+    pub fn is_win(&self, player: Player) -> bool {
         self.win_condition.is_win(self, player)
     }
 

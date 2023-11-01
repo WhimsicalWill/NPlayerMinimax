@@ -7,16 +7,8 @@
 use crate::gametraits::{ValidMoves, TransitionFunction, WinCondition, TieCondition};
 use crate::game::{Game, GameState};
 
-pub struct PushUpFourInitialBoard;
-impl InitialBoard for PushUpFourInitialBoard {
-    fn initial_board(&self, rows: usize, cols: usize) -> Vec<Vec<i32>> {
-        let mut board = vec![vec![-1; cols]; rows];
-        board
-    }
-}
-
-pub struct PushUpFourValidMoves;
-impl ValidMoves for PushUpFourValidMoves {
+pub struct UserGameValidMoves;
+impl ValidMoves for UserGameValidMoves {
     fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
         let bottom_row = game.get_num_rows() - 1;
         (0..game.get_num_cols())
@@ -31,8 +23,8 @@ impl ValidMoves for PushUpFourValidMoves {
     }
 }
 
-pub struct PushUpFourTransitionFunction;
-impl TransitionFunction for PushUpFourTransitionFunction {
+pub struct UserGameTransitionFunction;
+impl TransitionFunction for UserGameTransitionFunction {
     fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> GameState {
         let mut board_copy = game.get_state().get_board().clone();
         
@@ -50,15 +42,15 @@ impl TransitionFunction for PushUpFourTransitionFunction {
     }
 }
 
-pub struct PushUpFourWinCondition;
-impl WinCondition for PushUpFourWinCondition {
+pub struct UserGameWinCondition;
+impl WinCondition for UserGameWinCondition {
     fn is_win(&self, game: &Game, player: usize) -> bool {
         is_win(game, player)
     }
 }
 
-pub struct PushUpFourTieCondition;
-impl TieCondition for PushUpFourTieCondition {
+pub struct UserGameTieCondition;
+impl TieCondition for UserGameTieCondition {
     fn is_tie(&self, game: &Game) -> bool {
         game.get_state().get_move_num() == game.get_num_rows() * game.get_num_cols() || is_tie_after_transition(game)
     }

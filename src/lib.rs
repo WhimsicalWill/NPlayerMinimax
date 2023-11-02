@@ -3,13 +3,15 @@ mod game;
 mod game_elements;
 mod game_spec;
 mod opt;
+mod othello;
 mod push_up_four;
 
 use crate::eval::RandomEvaluationFunction;
 use crate::game::Game;
 use crate::game_elements::{GameStatus, Player};
 use crate::opt::minimax_move;
-use crate::push_up_four::PushUpFourSpec;
+// use crate::push_up_four::PushUpFourSpec;
+use crate::othello::OthelloSpec;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
@@ -23,12 +25,7 @@ pub struct GameController {
 pub fn create_game_controller(num_players: usize) -> GameController {
     const NUM_ROWS: usize = 6;
     const NUM_COLS: usize = 7;
-    let game: Game = Game::new(
-        Box::new(PushUpFourSpec),
-        NUM_ROWS,
-        NUM_COLS,
-        num_players,
-    );
+    let game: Game = Game::new(Box::new(OthelloSpec), NUM_ROWS, NUM_COLS, num_players);
     GameController {
         game,
         eval_function: RandomEvaluationFunction::new(num_players),

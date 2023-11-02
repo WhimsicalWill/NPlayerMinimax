@@ -48,7 +48,7 @@ impl Game {
         Game {
             state: GameState::new(
                 spec.get_initial_to_move(),
-                spec.get_initial_move_num(),
+                0,
                 spec.get_initial_board(num_rows, num_cols),
             ),
             spec,
@@ -89,18 +89,10 @@ impl Game {
             GameStatus::Tie | GameStatus::Ongoing => {
                 vec![1.0 / self.num_players as f64; self.num_players]
             }
-            GameStatus::Player0Win => {
-                self.create_score_vector(Player::Player0)
-            }
-            GameStatus::Player1Win => {
-                self.create_score_vector(Player::Player1)
-            }
-            GameStatus::Player2Win => {
-                self.create_score_vector(Player::Player2)
-            }
-            GameStatus::Player3Win => {
-                self.create_score_vector(Player::Player3)
-            }
+            GameStatus::Player0Win => self.create_score_vector(Player::Player0),
+            GameStatus::Player1Win => self.create_score_vector(Player::Player1),
+            GameStatus::Player2Win => self.create_score_vector(Player::Player2),
+            GameStatus::Player3Win => self.create_score_vector(Player::Player3),
         }
     }
 
@@ -141,7 +133,10 @@ impl Game {
         self.state = state;
     }
 
-    // Below: functions that call the dependency injected functions
+    /*
+    ----------The functions below call the functions in the game spec----------
+    */
+
     pub fn get_valid_moves(&self) -> Vec<(usize, usize)> {
         self.spec.get_valid_moves(self)
     }

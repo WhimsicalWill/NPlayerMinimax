@@ -1,5 +1,5 @@
-// Name: PushUpFour
-// InitialState: Empty board
+// Game Name: PushUpFour
+// InitialState: Empty board; Player 0 moves first
 // ValidMoves: Players can place chips on the bottom row of columns that aren't full.
 // TransitionFunction: Chips are placed at the bottom of the column, pushing other chips up.
 // WinCondition: There are n consecutive chips in a row, column, or diagonal.
@@ -19,10 +19,6 @@ impl GameSpec for PushUpFourSpec {
 
     fn get_initial_to_move(&self) -> Player {
         Player::Player0
-    }
-
-    fn get_initial_move_num(&self) -> usize {
-        0
     }
 
     fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
@@ -51,7 +47,9 @@ impl GameSpec for PushUpFourSpec {
     }
 
     fn is_win(&self, game: &Game, player: Player) -> bool {
-        self.is_row_win(game, player) || self.is_col_win(game, player) || self.is_diag_win(game, player)
+        self.is_row_win(game, player)
+            || self.is_col_win(game, player)
+            || self.is_diag_win(game, player)
     }
 
     fn is_tie(&self, game: &Game) -> bool {

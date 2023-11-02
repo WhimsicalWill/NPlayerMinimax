@@ -1,5 +1,5 @@
-use rand::Rng;
 use crate::game::GameState;
+use rand::Rng;
 
 pub trait EvaluationFunction {
     fn evaluate(&self, state: &GameState) -> Vec<f64>;
@@ -11,9 +11,7 @@ pub struct RandomEvaluationFunction {
 
 impl RandomEvaluationFunction {
     pub fn new(num_players: usize) -> Self {
-        RandomEvaluationFunction {
-            num_players,
-        }
+        RandomEvaluationFunction { num_players }
     }
 }
 
@@ -21,7 +19,7 @@ impl EvaluationFunction for RandomEvaluationFunction {
     // The random evaluation function doesn't actually use the state
     fn evaluate(&self, _state: &GameState) -> Vec<f64> {
         let mut rng = rand::thread_rng();
-        
+
         // Generate n-1 random numbers between 0 and 1
         let mut numbers: Vec<f64> = (0..self.num_players - 1)
             .map(|_| rng.gen::<f64>())

@@ -1,5 +1,8 @@
 use wasm_bindgen::prelude::*;
 
+#[derive(PartialEq)]
+#[derive(Clone)]
+#[derive(Copy)]
 #[wasm_bindgen]
 pub enum Player {
     Player0,
@@ -21,7 +24,7 @@ impl From<usize> for Player {
 }
 
 impl Player {
-    fn to_usize(&self) -> usize {
+    pub fn to_usize(&self) -> usize {
         match self {
             Player::Player0 => 0,
             Player::Player1 => 1,
@@ -31,14 +34,15 @@ impl Player {
     }
 }
 
+#[derive(PartialEq)]
 #[wasm_bindgen]
 pub enum GameStatus {
+    Player0Win,
+    Player1Win,
+    Player2Win,
+    Player3Win,
     Ongoing,
     Tie,
-    Win(Player),
 }
 
-pub enum BoardCell {
-    Empty,
-    Occupied(Player),
-}
+pub type BoardCell = Option<Player>;

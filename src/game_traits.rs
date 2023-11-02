@@ -1,5 +1,5 @@
 use crate::game::{Game, GameState};
-use crate::game_elements::{Player, GameStatus, BoardCell};
+use crate::game_elements::{BoardCell, Player};
 
 pub trait InitialState {
     fn get_board(&self, rows: usize, cols: usize) -> Vec<Vec<BoardCell>>;

@@ -1,19 +1,20 @@
 mod eval;
-mod opt;
 mod game;
 mod game_elements;
 mod game_traits;
+mod opt;
 mod push_up_four;
-mod user_game;
 
-use wasm_bindgen::prelude::*;
-use js_sys::Array;
-// use crate::pushupfour::{PushUpFourValidMoves, PushUpFourTransitionFunction, PushUpFourWinCondition, PushUpFourTieCondition};
-use crate::user_game::{UserGameInitialState, UserGameValidMoves, UserGameTransitionFunction, UserGameWinCondition, UserGameTieCondition};
-use crate::game::Game;
-use crate::game_elements::{Player, GameStatus, BoardCell};
 use crate::eval::RandomEvaluationFunction;
+use crate::game::Game;
+use crate::game_elements::{GameStatus, Player};
 use crate::opt::minimax_move;
+use crate::push_up_four::{
+    PushUpFourInitialState, PushUpFourTieCondition, PushUpFourTransitionFunction,
+    PushUpFourValidMoves, PushUpFourWinCondition,
+};
+use js_sys::Array;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub struct GameController {
@@ -29,13 +30,13 @@ pub fn create_game_controller(num_players: usize) -> GameController {
         NUM_ROWS,
         NUM_COLS,
         num_players,
-        Box::new(UserGameInitialState {}),
-        Box::new(UserGameValidMoves {}),
-        Box::new(UserGameTransitionFunction {}),
-        Box::new(UserGameWinCondition {}),
-        Box::new(UserGameTieCondition {}),
+        Box::new(PushUpFourInitialState {}),
+        Box::new(PushUpFourValidMoves {}),
+        Box::new(PushUpFourTransitionFunction {}),
+        Box::new(PushUpFourWinCondition {}),
+        Box::new(PushUpFourTieCondition {}),
     );
-    GameController { 
+    GameController {
         game,
         eval_function: RandomEvaluationFunction::new(num_players),
     }
@@ -50,11 +51,11 @@ impl GameController {
             let js_row = Array::new_with_length(row.len() as u32);
             for (j, &cell) in row.iter().enumerate() {
                 let value = match cell {
-                    BoardCell::Empty => "",
-                    BoardCell::Occupied(Player::Player0) => "X",
-                    BoardCell::Occupied(Player::Player1) => "O",
-                    BoardCell::Occupied(Player::Player2) => "Z",
-                    BoardCell::Occupied(Player::Player3) => "W",
+                    None => "",
+                    Some(Player::Player0) => "X",
+                    Some(Player::Player1) => "O",
+                    Some(Player::Player2) => "Z",
+                    Some(Player::Player3) => "W",
                 };
                 js_row.set(j as u32, JsValue::from_str(value));
             }
@@ -77,8 +78,15 @@ impl GameController {
 
     pub fn make_ai_move(&mut self) {
         const SEARCH_DEPTH: usize = 5;
-        let (_, (move_row, move_col)) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
-        self.game.transition(move_row, move_col);
+        let (_, move_option) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
+
+        if let Some((move_row, move_col)) = move_option {
+            // Execute the move
+            self.game.transition(move_row, move_col);
+        } else {
+            // Handle the case where there's no move
+            println!("No valid AI move found");
+        }
     }
 
     pub fn make_human_move(&mut self, move_row: usize, move_col: usize) {

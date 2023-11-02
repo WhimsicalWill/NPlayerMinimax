@@ -1,7 +1,7 @@
 mod eval;
 mod game;
 mod game_elements;
-mod game_traits;
+mod game_spec;
 mod opt;
 mod push_up_four;
 
@@ -9,10 +9,7 @@ use crate::eval::RandomEvaluationFunction;
 use crate::game::Game;
 use crate::game_elements::{GameStatus, Player};
 use crate::opt::minimax_move;
-use crate::push_up_four::{
-    PushUpFourInitialState, PushUpFourTieCondition, PushUpFourTransitionFunction,
-    PushUpFourValidMoves, PushUpFourWinCondition,
-};
+use crate::push_up_four::PushUpFourSpec;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
@@ -27,14 +24,10 @@ pub fn create_game_controller(num_players: usize) -> GameController {
     const NUM_ROWS: usize = 6;
     const NUM_COLS: usize = 7;
     let game: Game = Game::new(
+        Box::new(PushUpFourSpec),
         NUM_ROWS,
         NUM_COLS,
         num_players,
-        Box::new(PushUpFourInitialState {}),
-        Box::new(PushUpFourValidMoves {}),
-        Box::new(PushUpFourTransitionFunction {}),
-        Box::new(PushUpFourWinCondition {}),
-        Box::new(PushUpFourTieCondition {}),
     );
     GameController {
         game,

@@ -1,8 +1,8 @@
 use wasm_bindgen::prelude::*;
 
 #[derive(PartialEq)]
-#[derive(Clone)]
 #[derive(Copy)]
+#[derive(Clone)]
 #[wasm_bindgen]
 pub enum Player {
     Player0,

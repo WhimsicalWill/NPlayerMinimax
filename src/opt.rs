@@ -1,4 +1,3 @@
-// use crate::connectfour::ConnectFour;
 use crate::eval::EvaluationFunction;
 use crate::game::Game;
 use crate::game_elements::GameStatus;

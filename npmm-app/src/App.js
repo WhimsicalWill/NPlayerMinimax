@@ -1,13 +1,17 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./App.css";
-import init, { create_game_controller } from "./pkg/npmm.js";
+import init, {
+    create_game_controller,
+    GameStatus,
+    Player,
+} from "./pkg/npmm.js";
 
 function App() {
     const gameControllerRef = useRef(null);
     const [board, setBoard] = useState([]);
     const [toMove, setToMove] = useState(0);
     const [moveNum, setMoveNum] = useState(0);
-    const [status, setStatus] = useState(-2); // -2 means game is ongoing
+    const [status, setStatus] = useState(GameStatus.Ongoing);
     const [numPlayers, setNumPlayers] = useState(2);
     const [availableMoves, setAvailableMoves] = useState([]);
 
@@ -35,12 +39,13 @@ function App() {
     }, [handleReset]);
 
     const handleClick = (row, col) => {
+        console.log(row, col);
         gameControllerRef.current.make_human_move(row, col);
         updateGameState();
     };
 
     useEffect(() => {
-        if (toMove !== 0 && status === -2) {
+        if (toMove !== Player.Player0 && status === GameStatus.Ongoing) {
             setTimeout(() => {
                 gameControllerRef.current.make_ai_move();
                 updateGameState();
@@ -50,12 +55,12 @@ function App() {
 
     const getStatusText = (status) => {
         switch (status) {
-            case -2:
+            case GameStatus.Ongoing:
                 return "Game Ongoing";
-            case -1:
+            case GameStatus.Tie:
                 return "It's a Tie!";
             default:
-                return `Player ${status + 1} Wins!`;
+                return `Player ${status} Wins!`;
         }
     };
 
@@ -97,8 +102,8 @@ function App() {
                                             handleClick(rowIndex, cellIndex)
                                         }
                                         disabled={
-                                            status !== -2 ||
-                                            toMove !== 0 ||
+                                            status !== GameStatus.Ongoing ||
+                                            toMove !== Player.Player0 ||
                                             !isValidMove
                                         }
                                     >
@@ -110,10 +115,10 @@ function App() {
                     ))}
                 </div>
                 <div className="info-panel">
-                    <p>Next Move: {toMove === 0 ? "You" : "AI"}</p>
+                    <p>Next Move: {toMove === Player.Player0 ? "You" : "AI"}</p>
                     <p>Total Moves: {moveNum}</p>
                     <p>{getStatusText(status)}</p>
-                    {status !== -2 && (
+                    {status !== GameStatus.Ongoing && (
                         <button className="reset-button" onClick={handleReset}>
                             Reset Game
                         </button>

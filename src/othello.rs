@@ -67,7 +67,11 @@ impl OthelloSpec {
                 match board[r as usize][c as usize] {
                     Some(p) if p != player => has_opponent_between = true,
                     Some(p) if p == player => {
-                        return has_opponent_between;
+                        if has_opponent_between {
+                            return true;
+                        } else {
+                            break;
+                        }
                     }
                     _ => break,
                 }

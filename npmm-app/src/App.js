@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import GameDescriptionBox from "./GameDescriptionBox";
 import "./App.css";
 import init, {
     create_game_controller,
@@ -14,6 +15,7 @@ function App() {
     const [status, setStatus] = useState(GameStatus.Ongoing);
     const [numPlayers, setNumPlayers] = useState(2);
     const [availableMoves, setAvailableMoves] = useState([]);
+    const [wasmModule, setWasmModule] = useState(null);
 
     // A function to update the React state after each move
     const updateGameState = useCallback(() => {
@@ -77,6 +79,10 @@ function App() {
                     </button>
                 ))}
             </div>
+            <GameDescriptionBox
+                wasmModule={wasmModule}
+                setWasmModule={setWasmModule}
+            />
             <div className="game-container">
                 <div className="board">
                     {board.map((row, rowIndex) => (

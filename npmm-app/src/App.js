@@ -1,18 +1,13 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import GameDescriptionBox from "./GameDescriptionBox";
 import "./App.css";
-import init, {
-    create_game_controller,
-    GameStatus,
-    Player,
-} from "./pkg/npmm.js";
 
 function App() {
     const gameControllerRef = useRef(null);
     const [board, setBoard] = useState([]);
     const [toMove, setToMove] = useState(0);
     const [moveNum, setMoveNum] = useState(0);
-    const [status, setStatus] = useState(GameStatus.Ongoing);
+    const [status, setStatus] = useState(null);
     const [numPlayers, setNumPlayers] = useState(2);
     const [availableMoves, setAvailableMoves] = useState([]);
     const [wasmModule, setWasmModule] = useState(null);
@@ -27,18 +22,24 @@ function App() {
     }, []);
 
     const handleReset = useCallback(() => {
-        gameControllerRef.current = create_game_controller(numPlayers);
-        updateGameState();
-    }, [numPlayers, updateGameState]);
+        if (wasmModule) {
+            gameControllerRef.current =
+                wasmModule.create_game_controller(numPlayers);
+            updateGameState();
+        }
+    }, [numPlayers, updateGameState, wasmModule]);
 
     const handlePlayerSelection = (players) => {
         setNumPlayers(players);
         handleReset();
     };
 
+    // Reset the game when the wasmModule loads (after game is created)
     useEffect(() => {
-        init().then(handleReset);
-    }, [handleReset]);
+        if (wasmModule && wasmModule.init) {
+            wasmModule.init().then(handleReset);
+        }
+    }, [handleReset, wasmModule]);
 
     const handleClick = (row, col) => {
         console.log(row, col);
@@ -47,19 +48,24 @@ function App() {
     };
 
     useEffect(() => {
-        if (toMove !== Player.Player0 && status === GameStatus.Ongoing) {
+        if (
+            wasmModule &&
+            toMove !== wasmModule.Player.Player0 &&
+            status === wasmModule.GameStatus.Ongoing
+        ) {
             setTimeout(() => {
                 gameControllerRef.current.make_ai_move();
                 updateGameState();
             }, 25);
         }
-    }, [toMove, status, updateGameState]);
+    }, [toMove, status, updateGameState, wasmModule]);
 
     const getStatusText = (status) => {
+        if (!wasmModule) return "";
         switch (status) {
-            case GameStatus.Ongoing:
+            case wasmModule.GameStatus.Ongoing:
                 return "Game Ongoing";
-            case GameStatus.Tie:
+            case wasmModule.GameStatus.Tie:
                 return "It's a Tie!";
             default:
                 return `Player ${status} Wins!`;
@@ -108,9 +114,12 @@ function App() {
                                             handleClick(rowIndex, cellIndex)
                                         }
                                         disabled={
-                                            status !== GameStatus.Ongoing ||
-                                            toMove !== Player.Player0 ||
-                                            !isValidMove
+                                            wasmModule &&
+                                            (status !==
+                                                wasmModule.GameStatus.Ongoing ||
+                                                toMove !==
+                                                    wasmModule.Player.Player0 ||
+                                                !isValidMove)
                                         }
                                     >
                                         {cell}
@@ -120,16 +129,26 @@ function App() {
                         </div>
                     ))}
                 </div>
-                <div className="info-panel">
-                    <p>Next Move: {toMove === Player.Player0 ? "You" : "AI"}</p>
-                    <p>Total Moves: {moveNum}</p>
-                    <p>{getStatusText(status)}</p>
-                    {status !== GameStatus.Ongoing && (
-                        <button className="reset-button" onClick={handleReset}>
-                            Reset Game
-                        </button>
-                    )}
-                </div>
+                {wasmModule && (
+                    <div className="info-panel">
+                        <p>
+                            Next Move:{" "}
+                            {toMove === wasmModule.Player.Player0
+                                ? "You"
+                                : "AI"}
+                        </p>
+                        <p>Total Moves: {moveNum}</p>
+                        <p>{getStatusText(status)}</p>
+                        {status !== wasmModule.GameStatus.Ongoing && (
+                            <button
+                                className="reset-button"
+                                onClick={handleReset}
+                            >
+                                Reset Game
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

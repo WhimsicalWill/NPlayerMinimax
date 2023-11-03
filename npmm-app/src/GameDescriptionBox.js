@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import JSZip from "jszip";
 
+// Set the default base URL for axios
+axios.defaults.baseURL = "http://127.0.0.1:8080";
+
 function GameDescriptionBox({ wasmModule, setWasmModule }) {
     const [description, setDescription] = useState("");
 
@@ -26,8 +29,16 @@ function GameDescriptionBox({ wasmModule, setWasmModule }) {
 
             console.log("Fetching the WASM package...");
             const zip = await JSZip.loadAsync(response.data);
-            const jsFileBlob = await zip.file("npmm.js").async("blob");
-            const wasmFileBlob = await zip.file("npmm_bg.wasm").async("blob");
+            const fileNames = [];
+            zip.forEach((relativePath, file) => {
+                fileNames.push(relativePath);
+            });
+            console.log("Files in ZIP:", fileNames);
+
+            const jsFileBlob = await zip.file("pkg\\npmm.js").async("blob");
+            const wasmFileBlob = await zip
+                .file("pkg\\npmm_bg.wasm")
+                .async("blob");
 
             const jsFileUrl = URL.createObjectURL(jsFileBlob);
             const wasmFileUrl = URL.createObjectURL(wasmFileBlob);

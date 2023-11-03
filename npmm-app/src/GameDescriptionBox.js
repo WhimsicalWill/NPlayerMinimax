@@ -29,25 +29,22 @@ function GameDescriptionBox({ wasmModule, setWasmModule }) {
 
             console.log("Fetching the WASM package...");
             const zip = await JSZip.loadAsync(response.data);
-            const fileNames = [];
-            zip.forEach((relativePath, file) => {
-                fileNames.push(relativePath);
+            const jsFileContent = await zip.file("pkg\\npmm.js");
+            const jsFileBlob = new Blob([jsFileContent], {
+                type: "application/javascript",
             });
-            console.log("Files in ZIP:", fileNames);
-
-            const jsFileBlob = await zip.file("pkg\\npmm.js").async("blob");
-            const wasmFileBlob = await zip
-                .file("pkg\\npmm_bg.wasm")
-                .async("blob");
-
             const jsFileUrl = URL.createObjectURL(jsFileBlob);
-            const wasmFileUrl = URL.createObjectURL(wasmFileBlob);
 
-            const loadedWasmModule = await import(jsFileUrl);
-            await loadedWasmModule.default(wasmFileUrl); // This is equivalent to `init()`
-            setWasmModule(loadedWasmModule);
+            import(jsFileUrl).then(async (module) => {
+                // Use the module's exported functions here
+                await module.default(); // This is the equivalent of calling 'init()' in your previous setup.
+                setWasmModule(module);
+            });
         } catch (error) {
-            console.error("Error in fetching response:", error);
+            console.error(
+                "Error in fetching and initializing the WebAssembly module:",
+                error
+            );
         }
     };
 

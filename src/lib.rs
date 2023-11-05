@@ -3,7 +3,7 @@ mod game;
 mod game_elements;
 mod game_spec;
 mod opt;
-mod user_game
+mod user_game;
 
 use crate::eval::RandomEvaluationFunction;
 use crate::game::Game;

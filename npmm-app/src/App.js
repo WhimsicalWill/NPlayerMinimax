@@ -89,6 +89,7 @@ function App() {
             <GameDescriptionBox
                 wasmModule={wasmModule}
                 setWasmModule={setWasmModule}
+                gameControllerRef={gameControllerRef}
             />
             <div className="game-container">
                 <div className="board">

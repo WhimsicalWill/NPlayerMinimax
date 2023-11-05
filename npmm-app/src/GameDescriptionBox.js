@@ -4,7 +4,7 @@ import axios from "axios";
 // Set the default base URL for axios
 axios.defaults.baseURL = "http://127.0.0.1:8080";
 
-function GameDescriptionBox({ wasmModule, setWasmModule, gameControllerRef }) {
+function GameDescriptionBox({ setWasmModule, setWasmArrayBuffer }) {
     const [description, setDescription] = useState("");
 
     const handleDescriptionChange = (e) => {
@@ -27,23 +27,9 @@ function GameDescriptionBox({ wasmModule, setWasmModule, gameControllerRef }) {
             );
 
             console.log("Fetching the WASM package...");
-            const wasmArrayBuffer = response.data;
-
-            // import("http://127.0.0.1:8080/pkg/npmm.js").then(
-            //     ({ default: init, create_game_controller }) => {
-            //         init(wasmArrayBuffer).then(() => {
-            //             const gameContr = create_game_controller(2);
-            //             console.log(gameContr.get_board());
-            //             console.log(gameContr.get_valid_moves());
-            //         });
-            //     }
-            // );
+            setWasmArrayBuffer(response.data);
             import("http://127.0.0.1:8080/pkg/npmm.js").then((wasmModule) => {
-                wasmModule.default(wasmArrayBuffer).then(() => {
-                    const gameContr = wasmModule.create_game_controller(2);
-                    console.log(gameContr.get_board());
-                    console.log(gameContr.get_valid_moves());
-                });
+                setWasmModule(wasmModule);
             });
         } catch (error) {
             console.error(

@@ -11,6 +11,7 @@ function App() {
     const [numPlayers, setNumPlayers] = useState(2);
     const [availableMoves, setAvailableMoves] = useState([]);
     const [wasmModule, setWasmModule] = useState(null);
+    const [wasmArrayBuffer, setWasmArrayBuffer] = useState(null);
 
     // A function to update the React state after each move
     const updateGameState = useCallback(() => {
@@ -24,7 +25,8 @@ function App() {
 
     const handleReset = useCallback(() => {
         if (wasmModule) {
-            gameControllerRef.current = numPlayers; // create_game_controller(numPlayers);
+            gameControllerRef.current =
+                wasmModule.create_game_controller(numPlayers);
             console.log(gameControllerRef.current);
             updateGameState();
         }
@@ -37,10 +39,10 @@ function App() {
 
     // Reset the game when the wasmModule loads (after game is created)
     useEffect(() => {
-        if (wasmModule) {
-            handleReset();
+        if (wasmModule && wasmArrayBuffer) {
+            wasmModule.default(wasmArrayBuffer).then(handleReset);
         }
-    }, [handleReset, wasmModule]);
+    }, [handleReset, wasmModule, wasmArrayBuffer]);
 
     const handleClick = (row, col) => {
         console.log(row, col);
@@ -87,9 +89,8 @@ function App() {
                 ))}
             </div>
             <GameDescriptionBox
-                wasmModule={wasmModule}
                 setWasmModule={setWasmModule}
-                gameControllerRef={gameControllerRef}
+                setWasmArrayBuffer={setWasmArrayBuffer}
             />
             <div className="game-container">
                 <div className="board">

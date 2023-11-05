@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-import JSZip from "jszip";
-import init from "./npmm.js";
 
 // Set the default base URL for axios
 axios.defaults.baseURL = "http://127.0.0.1:8080";
@@ -29,15 +27,11 @@ function GameDescriptionBox({ wasmModule, setWasmModule }) {
             );
 
             console.log("Fetching the WASM package...");
-            // const zip = await JSZip.loadAsync(response.data);
-            // console.log(zip);
-            // const wasmFileContent = await zip
-            //     .file("pkg\\npmm_bg.wasm")
-            //     .async("arraybuffer");
+            const wasmArrayBuffer = response.data;
 
             import("http://127.0.0.1:8080/pkg/npmm.js").then(
                 ({ default: init, create_game_controller }) => {
-                    init().then(() => {
+                    init(wasmArrayBuffer).then(() => {
                         const gameContr = create_game_controller(2);
                         console.log(gameContr.get_board());
                         console.log(gameContr.get_valid_moves());

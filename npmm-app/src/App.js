@@ -14,6 +14,7 @@ function App() {
 
     // A function to update the React state after each move
     const updateGameState = useCallback(() => {
+        console.log(gameControllerRef.current);
         setBoard(gameControllerRef.current.get_board());
         setToMove(gameControllerRef.current.get_to_move());
         setMoveNum(gameControllerRef.current.get_move_num());
@@ -23,8 +24,8 @@ function App() {
 
     const handleReset = useCallback(() => {
         if (wasmModule) {
-            gameControllerRef.current =
-                wasmModule.create_game_controller(numPlayers);
+            gameControllerRef.current = numPlayers; // create_game_controller(numPlayers);
+            console.log(gameControllerRef.current);
             updateGameState();
         }
     }, [numPlayers, updateGameState, wasmModule]);
@@ -36,8 +37,8 @@ function App() {
 
     // Reset the game when the wasmModule loads (after game is created)
     useEffect(() => {
-        if (wasmModule && wasmModule.init) {
-            wasmModule.init().then(handleReset);
+        if (wasmModule) {
+            handleReset();
         }
     }, [handleReset, wasmModule]);
 

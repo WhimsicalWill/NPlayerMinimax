@@ -21,9 +21,7 @@ pub struct GameController {
 
 #[wasm_bindgen]
 pub fn create_game_controller(num_players: usize) -> GameController {
-    const NUM_ROWS: usize = 6;
-    const NUM_COLS: usize = 7;
-    let game: Game = Game::new(Box::new(UserGameSpec), NUM_ROWS, NUM_COLS, num_players);
+    let game: Game = Game::new(Box::new(UserGameSpec), num_players);
     GameController {
         game,
         eval_function: RandomEvaluationFunction::new(num_players),

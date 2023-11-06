@@ -10,11 +10,13 @@ use crate::game_elements::{BoardCell, Player};
 use crate::game_spec::GameSpec;
 
 const N_IN_A_ROW: usize = 4;
+const NUM_ROWS: usize = 6;
+const NUM_COLS: usize = 7;
 
 pub struct UserGameSpec;
 impl GameSpec for UserGameSpec {
-    fn get_initial_board(&self, rows: usize, cols: usize) -> Vec<Vec<BoardCell>> {
-        vec![vec![None; cols]; rows]
+    fn get_initial_board(&self) -> Vec<Vec<BoardCell>> {
+        vec![vec![None; NUM_COLS]; NUM_ROWS]
     }
 
     fn get_initial_to_move(&self) -> Player {
@@ -22,8 +24,8 @@ impl GameSpec for UserGameSpec {
     }
 
     fn get_valid_moves(&self, game: &Game) -> Vec<(usize, usize)> {
-        let bottom_row = game.get_num_rows() - 1;
-        (0..game.get_num_cols())
+        let bottom_row = NUM_ROWS - 1;
+        (0..NUM_COLS)
             .filter_map(|col| {
                 match game.get_board()[0][col] {
                     None => Some((bottom_row, col)), // (row, col) with origin at the top left
@@ -37,10 +39,10 @@ impl GameSpec for UserGameSpec {
         let mut board_copy = game.get_board().clone();
 
         // Push the new chip up the bottom, shifting other chips up
-        for row in 0..game.get_num_rows() - 1 {
+        for row in 0..NUM_ROWS - 1 {
             board_copy[row][move_col] = board_copy[row + 1][move_col];
         }
-        board_copy[game.get_num_rows() - 1][move_col] = Some(game.get_to_move());
+        board_copy[NUM_ROWS - 1][move_col] = Some(game.get_to_move());
 
         // Update the player to move, the move number, and the state of the baord
         GameState::new(game.get_next_player(), game.get_move_num() + 1, board_copy)
@@ -51,7 +53,7 @@ impl GameSpec for UserGameSpec {
     }
 
     fn is_tie(&self, game: &Game) -> bool {
-        game.get_move_num() == game.get_num_rows() * game.get_num_cols()
+        game.get_move_num() == NUM_ROWS * NUM_COLS
             || self.is_tie_after_transition(game)
     }
 }
@@ -66,9 +68,8 @@ impl UserGameSpec {
     }
 
     fn is_row_win(&self, game: &Game, player: Player) -> bool {
-        let num_cols = game.get_num_cols();
         for row in game.get_state().get_board().iter() {
-            for i in 0..num_cols - N_IN_A_ROW + 1 {
+            for i in 0..NUM_COLS - N_IN_A_ROW + 1 {
                 if self.is_sequence_win(&row[i..i + N_IN_A_ROW], player) {
                     return true;
                 }
@@ -78,16 +79,14 @@ impl UserGameSpec {
     }
 
     fn is_col_win(&self, game: &Game, player: Player) -> bool {
-        let num_cols = game.get_num_cols();
-        let num_rows = game.get_num_rows();
-        for col in 0..num_cols {
+        for col in 0..NUM_COLS {
             let col_elems: Vec<BoardCell> = game
                 .get_state()
                 .get_board()
                 .iter()
                 .map(|row| row[col])
                 .collect();
-            for i in 0..num_rows - N_IN_A_ROW + 1 {
+            for i in 0..NUM_ROWS - N_IN_A_ROW + 1 {
                 if self.is_sequence_win(&col_elems[i..i + N_IN_A_ROW], player) {
                     return true;
                 }
@@ -97,12 +96,9 @@ impl UserGameSpec {
     }
 
     fn is_diag_win(&self, game: &Game, player: Player) -> bool {
-        let num_rows = game.get_num_rows();
-        let num_cols = game.get_num_cols();
-
         // Check main diagonals
-        for i in 0..num_rows - N_IN_A_ROW + 1 {
-            for j in 0..num_cols - N_IN_A_ROW + 1 {
+        for i in 0..NUM_ROWS - N_IN_A_ROW + 1 {
+            for j in 0..NUM_COLS - N_IN_A_ROW + 1 {
                 let diagonal: Vec<BoardCell> = (0..N_IN_A_ROW)
                     .map(|k| game.get_state().get_board()[i + k][j + k])
                     .collect();
@@ -113,8 +109,8 @@ impl UserGameSpec {
         }
 
         // Check counter-diagonals
-        for i in 0..num_rows - N_IN_A_ROW + 1 {
-            for j in N_IN_A_ROW - 1..num_cols {
+        for i in 0..NUM_ROWS - N_IN_A_ROW + 1 {
+            for j in N_IN_A_ROW - 1..NUM_COLS {
                 let diagonal: Vec<BoardCell> = (0..N_IN_A_ROW)
                     .map(|k| game.get_state().get_board()[i + k][j - k])
                     .collect();

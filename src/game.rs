@@ -33,27 +33,21 @@ impl GameState {
 pub struct Game {
     state: GameState,
     spec: Box<dyn GameSpec>,
-    num_rows: usize,
-    num_cols: usize,
     num_players: usize,
 }
 
 impl Game {
     pub fn new(
         spec: Box<dyn GameSpec>,
-        num_rows: usize,
-        num_cols: usize,
         num_players: usize,
     ) -> Game {
         Game {
             state: GameState::new(
                 spec.get_initial_to_move(),
                 0,
-                spec.get_initial_board(num_rows, num_cols),
+                spec.get_initial_board(),
             ),
             spec,
-            num_rows,
-            num_cols,
             num_players,
         }
     }
@@ -98,14 +92,6 @@ impl Game {
 
     pub fn get_state(&self) -> &GameState {
         &self.state
-    }
-
-    pub fn get_num_rows(&self) -> usize {
-        self.num_rows
-    }
-
-    pub fn get_num_cols(&self) -> usize {
-        self.num_cols
     }
 
     pub fn get_num_players(&self) -> usize {

@@ -121,16 +121,20 @@ impl Game {
         Player::from(next_player_num)
     }
 
-    pub fn get_board(&self) -> &Vec<Vec<BoardCell>> {
-        self.state.get_board()
-    }
-
     pub fn get_to_move(&self) -> Player {
         self.state.get_to_move()
     }
 
     pub fn get_move_num(&self) -> usize {
         self.state.get_move_num()
+    }
+
+    pub fn get_board(&self) -> &Vec<Vec<BoardCell>> {
+        self.state.get_board()
+    }
+
+    pub fn get_prev_state(&self) -> &Option<Box<GameState>> {
+        self.state.get_prev_state()
     }
 
     /*

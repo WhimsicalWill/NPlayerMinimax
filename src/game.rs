@@ -9,6 +9,16 @@ pub struct GameState {
     prev_state: Option<Box<GameState>>,
 }
 
+impl PartialEq for GameState {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_move == other.to_move &&
+        self.move_num == other.move_num &&
+        self.board == other.board
+        // Note that we do not compare prev_state
+    }
+}
+impl Eq for GameState {}
+
 impl GameState {
     pub fn new(to_move: Player, move_num: usize, board: Vec<Vec<BoardCell>>) -> Self {
         GameState {

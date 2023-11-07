@@ -1,7 +1,9 @@
+use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashSet;
+
 use crate::eval::EvaluationFunction;
-use crate::game::Game;
+use crate::game::{Game, GameState};
 use crate::game_elements::GameStatus;
 
 pub fn minimax_move(

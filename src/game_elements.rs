@@ -1,6 +1,8 @@
+use std::hash::Hash;
+
 use wasm_bindgen::prelude::*;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Hash)]
 #[wasm_bindgen]
 pub enum Player {
     Player0,

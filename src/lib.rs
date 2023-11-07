@@ -63,7 +63,7 @@ impl GameController {
     }
 
     pub fn make_ai_move(&mut self) {
-        const SEARCH_DEPTH: usize = 5;
+        const SEARCH_DEPTH: usize = 3;
         let (_, move_option) = minimax_move(&mut self.game, &self.eval_function, SEARCH_DEPTH);
 
         if let Some((move_row, move_col)) = move_option {

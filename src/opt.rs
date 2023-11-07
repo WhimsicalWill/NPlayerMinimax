@@ -1,3 +1,5 @@
+use std::collections::hash_map::DefaultHasher;
+use std::collections::HashSet;
 use crate::eval::EvaluationFunction;
 use crate::game::Game;
 use crate::game_elements::GameStatus;
@@ -37,8 +39,26 @@ fn dfs(
     let moves = game.get_valid_moves();
     let mut best_move = None;
     let mut best_score: Option<Vec<f64>> = None;
+
+    // Each level of the game tree starts with a fresh HashSet of the hashes of visited states
+    let mut seen_hashes = HashSet::new();
+
     for &(move_row, move_col) in &moves {
         game.transition(move_row, move_col);
+
+        // Compute a hash of the current state without cloning.
+        let hash = calculate_hash(game.get_state());
+
+        // Check if the hash of the current state has already been seen at this layer.
+        if seen_hashes.contains(&hash) {
+            // If it has been visited, skip this move.
+            game.undo_transition();
+            continue;
+        }
+
+        // If it hasn't been visited, add the hash to the HashSet and proceed with the search.
+        seen_hashes.insert(hash);
+
         let (score, _) = dfs(game, d + 1, alphas, eval_func, search_depth);
         if best_score.is_none() || score[player_idx] > best_score.as_ref().unwrap()[player_idx] {
             best_score = Some(score);
@@ -68,4 +88,16 @@ fn can_prune(score: &Vec<f64>, alphas: &Vec<f64>, player_idx: usize) -> bool {
         .fold(f64::NEG_INFINITY, f64::max);
 
     score[player_idx] > 1.0 - max_other_player
+}
+
+fn calculate_hash(game_state: &GameState) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    game_state.get_to_move().hash(&mut hasher);
+    for row in game_state.get_board() {
+        for cell in row {
+            cell.hash(&mut hasher);
+        }
+    }
+    // Do not include prev_state or move_num in the hash.
+    hasher.finish()
 }

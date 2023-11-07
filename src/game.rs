@@ -6,6 +6,7 @@ pub struct GameState {
     to_move: Player,
     move_num: usize,
     board: Vec<Vec<BoardCell>>,
+    prev_state: Option<Box<GameState>>,
 }
 
 impl GameState {
@@ -14,6 +15,7 @@ impl GameState {
             to_move,
             move_num,
             board,
+            prev_state: None,
         }
     }
 
@@ -28,10 +30,18 @@ impl GameState {
     pub fn get_board(&self) -> &Vec<Vec<BoardCell>> {
         &self.board
     }
+
+    pub fn get_prev_state(&self) -> &Option<Box<GameState>> {
+        &self.prev_state
+    }
+
+    pub fn set_prev_state(&mut self, state: Box<GameState>) {
+        self.prev_state = Some(state);
+    }
 }
 
 pub struct Game {
-    state: GameState,
+    state: Box<GameState>,
     spec: Box<dyn GameSpec>,
     num_players: usize,
 }
@@ -42,11 +52,11 @@ impl Game {
         num_players: usize,
     ) -> Game {
         Game {
-            state: GameState::new(
+            state: Box::new(GameState::new(
                 spec.get_initial_to_move(),
                 0,
                 spec.get_initial_board(),
-            ),
+            )),
             spec,
             num_players,
         }
@@ -90,7 +100,15 @@ impl Game {
         }
     }
 
-    pub fn get_state(&self) -> &GameState {
+     pub fn undo_transition(&mut self) {
+        if let Some(prev_state) = self.state.prev_state.take() {
+            self.state = prev_state;
+        } else {
+            panic!("Attempted to undo initial state");
+        }
+    }
+
+    pub fn get_state(&self) -> &Box<GameState> {
         &self.state
     }
 
@@ -115,10 +133,6 @@ impl Game {
         self.state.get_move_num()
     }
 
-    pub fn set_state(&mut self, state: GameState) {
-        self.state = state;
-    }
-
     /*
     ----------The functions below call the functions in the game spec----------
     */
@@ -128,7 +142,15 @@ impl Game {
     }
 
     pub fn transition(&mut self, move_row: usize, move_col: usize) {
-        self.state = self.spec.transition(self, move_row, move_col);
+        // Other state is (initially) the state after the move is made
+        let mut other_state = self.spec.transition(self, move_row, move_col);
+
+        // We use std::mem::swap to exchange self.state with other_state directly
+        std::mem::swap(&mut self.state, &mut other_state);
+
+        // After swapping, other_state contains the previous state
+        // We now set the previous state of self.state to be other_state
+        self.state.set_prev_state(other_state);
     }
 
     pub fn is_win(&self, player: Player) -> bool {

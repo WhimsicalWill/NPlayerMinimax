@@ -7,13 +7,12 @@ pub fn minimax_move(
     eval_func: &dyn EvaluationFunction,
     search_depth: usize,
 ) -> (f64, Option<(usize, usize)>) {
-    // Adjusted return type if needed
     let num_players = game.get_num_players();
     let mut alphas = vec![f64::NEG_INFINITY; num_players];
     let (best_score, best_move) = dfs(game, 0, &mut alphas, eval_func, search_depth);
 
     (
-        best_score[game.get_state().get_to_move().to_usize()],
+        best_score[game.get_to_move().to_usize()],
         best_move,
     )
 }
@@ -39,22 +38,21 @@ fn dfs(
     let mut best_move = None;
     let mut best_score: Option<Vec<f64>> = None;
     for &(move_row, move_col) in &moves {
-        let saved_state = game.get_state().clone();
-        game.transition(move_row, move_col); // needs change
+        game.transition(move_row, move_col);
         let (score, _) = dfs(game, d + 1, alphas, eval_func, search_depth);
         if best_score.is_none() || score[player_idx] > best_score.as_ref().unwrap()[player_idx] {
             best_score = Some(score);
-            best_move = Some((move_row, move_col)); // needs change
+            best_move = Some((move_row, move_col));
             if can_prune(best_score.as_ref().unwrap(), &alphas, player_idx) {
-                game.set_state(saved_state);
+                game.undo_transition();
                 break;
             }
             alphas[player_idx] = alphas[player_idx].max(best_score.as_ref().unwrap()[player_idx]);
         }
-        game.set_state(saved_state);
+        game.undo_transition();
     }
     alphas[player_idx] = old_alpha;
-    // return all 0s if there are no available moves yet the game is ongoing (shouldn't happen)
+    // return all 0s if there are no available moves yet the game is ongoing (which shouldn't happen)
     (
         best_score.unwrap_or_else(|| vec![0.0; game.get_num_players()]),
         best_move,

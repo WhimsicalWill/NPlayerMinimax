@@ -35,7 +35,7 @@ impl GameSpec for UserGameSpec {
             .collect()
     }
 
-    fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> GameState {
+    fn transition(&self, game: &Game, _move_row: usize, move_col: usize) -> Box<GameState> {
         let mut board_copy = game.get_board().clone();
 
         // Push the new chip up the bottom, shifting other chips up
@@ -45,7 +45,7 @@ impl GameSpec for UserGameSpec {
         board_copy[NUM_ROWS - 1][move_col] = Some(game.get_to_move());
 
         // Update the player to move, the move number, and the state of the baord
-        GameState::new(game.get_next_player(), game.get_move_num() + 1, board_copy)
+        Box::new(GameState::new(game.get_next_player(), game.get_move_num() + 1, board_copy))
     }
 
     fn is_win(&self, game: &Game, player: Player) -> bool {
